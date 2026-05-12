@@ -160,15 +160,15 @@ const menuItems = [
   },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ onClose }: { onClose?: () => void }) {
   const pathname = usePathname();
   const { data: session } = useSession();
 
   return (
     <aside className="w-64 bg-white border-r border-gray-200 min-h-screen flex flex-col">
       {/* Logo */}
-      <div className="p-6 border-b border-gray-200">
-        <Link href="/dashboard" className="flex items-center gap-3">
+      <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+        <Link href="/dashboard" className="flex items-center gap-3" onClick={onClose}>
           <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-lg">M</span>
           </div>
@@ -177,6 +177,13 @@ export default function Sidebar() {
             <p className="text-xs text-gray-500">MEDE SPORT</p>
           </div>
         </Link>
+        {onClose && (
+          <button onClick={onClose} className="lg:hidden p-1 rounded-lg hover:bg-gray-100">
+            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
       </div>
 
       {/* Navigation */}
@@ -190,6 +197,7 @@ export default function Sidebar() {
               {showDivider && <div className="my-2 border-t border-gray-100" />}
               <Link
                 href={item.href}
+                onClick={onClose}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                   isActive
                     ? "bg-blue-600 text-white shadow-sm"

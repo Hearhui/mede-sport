@@ -122,9 +122,9 @@ export default function PosPage() {
   }
 
   return (
-    <div className="flex gap-6 h-[calc(100vh-4rem)]">
+    <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 lg:h-[calc(100vh-4rem)]">
       {/* Left: Product Search + Results */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0">
         <h1 className="text-2xl font-bold text-gray-900 mb-4">POS ขายหน้าร้าน</h1>
 
         {/* Search */}
@@ -246,7 +246,7 @@ export default function PosPage() {
       </div>
 
       {/* Right: Cart Summary + Payment */}
-      <div className="w-80 flex flex-col">
+      <div className="w-full lg:w-80 flex flex-col shrink-0">
         <div className="bg-white rounded-xl border border-gray-200 p-6 flex-1 flex flex-col">
           <h2 className="font-semibold text-gray-900 mb-4">สรุปรายการ</h2>
 

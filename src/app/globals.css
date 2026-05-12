@@ -1,5 +1,19 @@
 @import "tailwindcss";
 
+/* Mobile responsive tables */
+@media (max-width: 768px) {
+  .bg-white.rounded-xl.border table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
 @media print {
   body {
     background: white !important;
