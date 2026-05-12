@@ -44,6 +44,9 @@ export default async function ProductsPage({
           <h1 className="text-2xl font-bold text-gray-900">สินค้า</h1>
           <p className="text-gray-500 mt-1">{total.toLocaleString()} รายการ</p>
         </div>
+        <Link href="/products/new" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium">
+          + เพิ่มสินค้า
+        </Link>
       </div>
 
       {/* Search */}

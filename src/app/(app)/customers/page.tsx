@@ -43,6 +43,9 @@ export default async function CustomersPage({
           <h1 className="text-2xl font-bold text-gray-900">ลูกค้า</h1>
           <p className="text-gray-500 mt-1">{total.toLocaleString()} ราย</p>
         </div>
+        <Link href="/customers/new" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium">
+          + เพิ่มลูกค้า
+        </Link>
       </div>
 
       <form className="mb-6">
@@ -78,6 +81,9 @@ export default async function CustomersPage({
                 <td className="px-4 py-3 text-gray-500">{c.phone || "-"}</td>
                 <td className="px-4 py-3 text-gray-500 font-mono text-xs">{c.taxId || "-"}</td>
                 <td className="px-4 py-3 text-right text-gray-500">{c._count.documents}</td>
+                <td className="px-4 py-3 text-right">
+                  <Link href={`/customers/${c.id}`} className="text-blue-600 hover:underline text-sm">แก้ไข</Link>
+                </td>
               </tr>
             ))}
           </tbody>

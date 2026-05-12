@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
 
 const menuItems = [
   {
@@ -77,6 +78,15 @@ const menuItems = [
     ),
   },
   {
+    label: "ผู้ขาย (Supplier)",
+    href: "/suppliers",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+      </svg>
+    ),
+  },
+  {
     label: "แคตตาล็อค",
     href: "/catalog",
     icon: (
@@ -116,6 +126,7 @@ const menuItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { data: session } = useSession();
 
   return (
     <aside className="w-64 bg-white border-r border-gray-200 min-h-screen flex flex-col">
@@ -153,9 +164,25 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* Footer */}
+      {/* User Info + Logout */}
       <div className="p-4 border-t border-gray-200">
-        <p className="text-xs text-gray-400 text-center">MEDE SPORT System v1.0</p>
+        {session?.user && (
+          <div className="flex items-center justify-between">
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-gray-900 truncate">{session.user.name}</p>
+              <p className="text-xs text-gray-400 truncate">{session.user.email}</p>
+            </div>
+            <button
+              onClick={() => signOut({ callbackUrl: "/login" })}
+              className="text-gray-400 hover:text-red-500 shrink-0 ml-2"
+              title="ออกจากระบบ"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+            </button>
+          </div>
+        )}
       </div>
     </aside>
   );

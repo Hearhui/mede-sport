@@ -8,6 +8,23 @@ datasource db {
 }
 
 // ═══════════════════════════════════════════
+// USERS & AUTH
+// ═══════════════════════════════════════════
+
+model User {
+  id            Int      @id @default(autoincrement())
+  email         String   @unique
+  password      String
+  name          String
+  role          String   @default("STAFF") // ADMIN, MANAGER, STAFF
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+// ═══════════════════════════════════════════
 // COMPANY INFO
 // ═══════════════════════════════════════════
 
