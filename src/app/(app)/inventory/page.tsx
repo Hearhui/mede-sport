@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import InventoryActions from "./InventoryActions";
 
 export default async function InventoryPage({
   searchParams,
@@ -48,6 +49,7 @@ export default async function InventoryPage({
             มูลค่าสต็อครวม: <span className="font-bold text-gray-900">฿{Math.round(totalValue).toLocaleString()}</span>
           </p>
         </div>
+        <InventoryActions />
       </div>
 
       <form className="mb-6 flex gap-4">

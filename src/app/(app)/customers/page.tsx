@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import DeleteButton from "@/components/DeleteButton";
 
 export default async function CustomersPage({
   searchParams,
@@ -82,7 +83,10 @@ export default async function CustomersPage({
                 <td className="px-4 py-3 text-gray-500 font-mono text-xs">{c.taxId || "-"}</td>
                 <td className="px-4 py-3 text-right text-gray-500">{c._count.documents}</td>
                 <td className="px-4 py-3 text-right">
-                  <Link href={`/customers/${c.id}`} className="text-blue-600 hover:underline text-sm">แก้ไข</Link>
+                  <div className="flex items-center justify-end gap-3">
+                    <Link href={`/customers/${c.id}`} className="text-blue-600 hover:underline text-sm">แก้ไข</Link>
+                    <DeleteButton apiUrl={`/api/customers/${c.id}`} itemName={c.name} />
+                  </div>
                 </td>
               </tr>
             ))}

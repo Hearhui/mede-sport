@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import DeleteButton from "@/components/DeleteButton";
 
 export default async function SuppliersPage() {
   const suppliers = await prisma.supplier.findMany({
@@ -44,7 +45,10 @@ export default async function SuppliersPage() {
                 <td className="px-4 py-3 text-gray-500 font-mono text-xs">{s.taxId || "-"}</td>
                 <td className="px-4 py-3 text-right text-gray-500">{s._count.goodsReceipts}</td>
                 <td className="px-4 py-3 text-right">
-                  <Link href={`/suppliers/${s.id}`} className="text-blue-600 hover:underline text-sm">แก้ไข</Link>
+                  <div className="flex items-center justify-end gap-3">
+                    <Link href={`/suppliers/${s.id}`} className="text-blue-600 hover:underline text-sm">แก้ไข</Link>
+                    <DeleteButton apiUrl={`/api/suppliers/${s.id}`} itemName={s.name} />
+                  </div>
                 </td>
               </tr>
             ))}
