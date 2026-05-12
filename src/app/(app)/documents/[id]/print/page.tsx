@@ -71,6 +71,7 @@ export default async function PrintDocumentPage({
     where: { id: parseInt(id) },
     include: {
       customer: true,
+      parentDocument: { select: { documentNo: true, documentType: true } },
       items: {
         orderBy: { itemNo: "asc" },
         include: { product: { include: { images: { where: { isPrimary: true }, take: 1 } } } },
@@ -163,8 +164,20 @@ export default async function PrintDocumentPage({
                   )}
                   {doc.referenceNo && (
                     <tr className="border-b border-gray-100">
-                      <td className="py-1.5 text-gray-500">อ้างอิง / Ref.</td>
-                      <td className="py-1.5">{doc.referenceNo}</td>
+                      <td className="py-1.5 text-gray-500 font-medium">
+                        {doc.documentType === "RECEIPT" ? "อ้างอิงใบกำกับภาษีเลขที่" :
+                         doc.documentType === "CREDIT_NOTE" ? "อ้างอิงใบกำกับภาษีเลขที่" :
+                         "เลขที่อ้างอิง / Ref. No."}
+                      </td>
+                      <td className="py-1.5 font-bold text-blue-700">{doc.referenceNo}</td>
+                    </tr>
+                  )}
+                  {doc.parentDocument && !doc.referenceNo && (
+                    <tr className="border-b border-gray-100">
+                      <td className="py-1.5 text-gray-500 font-medium">
+                        อ้างอิง {typeLabels[doc.parentDocument.documentType]?.th || "เอกสาร"}
+                      </td>
+                      <td className="py-1.5 font-bold text-blue-700">{doc.parentDocument.documentNo}</td>
                     </tr>
                   )}
                   <tr>
