@@ -144,22 +144,26 @@ export default function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1">
-        {menuItems.map((item) => {
+      <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
+        {menuItems.map((item, idx) => {
           const isActive = pathname.startsWith(item.href);
+          // Add section dividers
+          const showDivider = idx === 5 || idx === 8 || idx === 9;
           return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                isActive
-                  ? "bg-blue-50 text-blue-700"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-              }`}
-            >
-              {item.icon}
-              {item.label}
-            </Link>
+            <div key={item.href}>
+              {showDivider && <div className="my-2 border-t border-gray-100" />}
+              <Link
+                href={item.href}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                  isActive
+                    ? "bg-blue-600 text-white shadow-sm"
+                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                }`}
+              >
+                {item.icon}
+                {item.label}
+              </Link>
+            </div>
           );
         })}
       </nav>
