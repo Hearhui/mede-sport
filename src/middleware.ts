@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getToken } from "next-auth/jwt";
 
-export async function middleware(req: NextRequest) {
-  const token = await getToken({ req, secret: process.env.AUTH_SECRET });
+export function middleware(req: NextRequest) {
+  // Check for auth session cookie (NextAuth v5 uses this name on HTTPS)
+  const hasSession =
+    req.cookies.has("__Secure-authjs.session-token") ||
+    req.cookies.has("authjs.session-token") ||
+    req.cookies.has("next-auth.session-token") ||
+    req.cookies.has("__Secure-next-auth.session-token");
 
-  if (!token) {
+  if (!hasSession) {
     const loginUrl = new URL("/login", req.url);
     loginUrl.searchParams.set("callbackUrl", req.nextUrl.pathname);
     return NextResponse.redirect(loginUrl);
@@ -16,6 +20,6 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!api/auth|_next/static|_next/image|favicon.ico|login|register).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|login|register).*)",
   ],
 };
