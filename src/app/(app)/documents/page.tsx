@@ -40,11 +40,13 @@ const statusColors: Record<string, string> = {
 export default async function DocumentsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ search?: string; type?: string; page?: string }>;
+  searchParams: Promise<{ search?: string; type?: string; page?: string; from?: string; to?: string }>;
 }) {
   const params = await searchParams;
   const search = params.search || "";
   const type = params.type || "";
+  const from = params.from || "";
+  const to = params.to || "";
   const page = parseInt(params.page || "1");
   const limit = 20;
 
@@ -56,6 +58,11 @@ export default async function DocumentsPage({
     ];
   }
   if (type) where.documentType = type;
+  if (from || to) {
+    where.date = {};
+    if (from) where.date.gte = new Date(from);
+    if (to) where.date.lte = new Date(to + "T23:59:59");
+  }
 
   const [documents, total] = await Promise.all([
     prisma.document.findMany({
@@ -92,16 +99,18 @@ export default async function DocumentsPage({
       </div>
 
       {/* Filters */}
-      <div className="flex gap-4 mb-6">
-        <form className="flex-1">
-          <input
-            type="text"
-            name="search"
-            defaultValue={search}
+      <div className="flex flex-wrap gap-4 mb-6">
+        <form className="flex flex-wrap gap-3 items-end flex-1">
+          <input type="text" name="search" defaultValue={search}
             placeholder="ค้นหาเลขที่เอกสาร หรือชื่อลูกค้า..."
-            className="w-full md:max-w-sm px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-          />
+            className="w-full md:max-w-xs px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" />
+          <div className="flex gap-2 items-center">
+            <input type="date" name="from" defaultValue={from} className="px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+            <span className="text-gray-400 text-sm">ถึง</span>
+            <input type="date" name="to" defaultValue={to} className="px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+          </div>
           {type && <input type="hidden" name="type" value={type} />}
+          <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">กรอง</button>
         </form>
         <div className="flex gap-2 flex-wrap">
           <Link
