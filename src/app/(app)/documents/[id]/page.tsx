@@ -79,6 +79,15 @@ export default async function DocumentDetailPage({
           <p className="text-gray-500 mt-1">{typeLabels[doc.documentType]}</p>
         </div>
         <div className="flex gap-2">
+          <Link
+            href={`/documents/${doc.id}/print`}
+            className="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-900 text-sm font-medium flex items-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+            </svg>
+            พิมพ์เอกสาร
+          </Link>
           {conversions.map((opt) => (
             <ConvertButton
               key={opt.targetType}
