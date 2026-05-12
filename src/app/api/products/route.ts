@@ -35,9 +35,11 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
+  const count = await prisma.product.count();
+  const productCode = body.productCode || `PRD${String(count + 1).padStart(6, "0")}`;
   const product = await prisma.product.create({
     data: {
-      productCode: body.productCode,
+      productCode,
       name: body.name,
       unit: body.unit || "อัน",
       sellingPrice: body.sellingPrice || 0,

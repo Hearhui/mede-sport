@@ -72,6 +72,7 @@ export default async function ProductsPage({
               <th className="text-right px-4 py-3 font-medium text-gray-600">ทุน</th>
               <th className="text-right px-4 py-3 font-medium text-gray-600">กำไร%</th>
               <th className="text-right px-4 py-3 font-medium text-gray-600">สต็อครวม</th>
+              <th className="px-4 py-3"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -109,6 +110,9 @@ export default async function ProductsPage({
                     <span className={`font-medium ${totalQty <= 2 ? 'text-red-600' : totalQty <= 10 ? 'text-yellow-600' : 'text-gray-900'}`}>
                       {totalQty}
                     </span>
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <Link href={`/products/${p.id}`} className="text-blue-600 hover:underline text-sm">แก้ไข</Link>
                   </td>
                 </tr>
               );
