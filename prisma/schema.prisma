@@ -1,0 +1,507 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ═══════════════════════════════════════════
+// COMPANY INFO
+// ═══════════════════════════════════════════
+
+model CompanyInfo {
+  id        Int      @id @default(autoincrement())
+  name      String
+  nameEn    String?  @map("name_en")
+  address1  String?  @map("address_line1")
+  address2  String?  @map("address_line2")
+  subdistrict String?
+  district  String?
+  province  String?
+  country   String?  @default("ประเทศไทย")
+  postalCode String? @map("postal_code")
+  taxId     String?  @map("tax_id")
+  phone     String?
+  fax       String?
+  logoUrl   String?  @map("logo_url")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("company_info")
+}
+
+// ═══════════════════════════════════════════
+// CUSTOMERS
+// ═══════════════════════════════════════════
+
+model Customer {
+  id             Int      @id @default(autoincrement())
+  customerCode   String   @unique @map("customer_code")
+  name           String
+  addressLine1   String?  @map("address_line1")
+  addressLine2   String?  @map("address_line2")
+  subdistrict    String?
+  district       String?
+  province       String?
+  country        String?  @default("ประเทศไทย")
+  postalCode     String?  @map("postal_code")
+  taxId          String?  @map("tax_id")
+  phone          String?
+  fax            String?
+  contactName    String?  @map("contact_name")
+  creditTermDays Int      @default(0) @map("credit_term_days")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  documents      Document[]
+  posTransactions PosTransaction[]
+  billingNotes   BillingNote[]
+
+  @@map("customers")
+}
+
+// ═══════════════════════════════════════════
+// SUPPLIERS
+// ═══════════════════════════════════════════
+
+model Supplier {
+  id            Int      @id @default(autoincrement())
+  supplierCode  String   @unique @map("supplier_code")
+  name          String
+  addressLine1  String?  @map("address_line1")
+  addressLine2  String?  @map("address_line2")
+  subdistrict   String?
+  district      String?
+  province      String?
+  country       String?  @default("ประเทศไทย")
+  postalCode    String?  @map("postal_code")
+  taxId         String?  @map("tax_id")
+  phone         String?
+  contactName   String?  @map("contact_name")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  purchaseOrders PurchaseOrder[]
+  goodsReceipts  GoodsReceipt[]
+
+  @@map("suppliers")
+}
+
+// ═══════════════════════════════════════════
+// PRODUCTS & CATEGORIES
+// ═══════════════════════════════════════════
+
+model Category {
+  id       Int        @id @default(autoincrement())
+  name     String
+  parentId Int?       @map("parent_id")
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryTree")
+  products Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id           Int      @id @default(autoincrement())
+  productCode  String   @unique @map("product_code")
+  name         String
+  unit         String   @default("อัน")
+  sellingPrice Decimal  @default(0) @map("selling_price") @db.Decimal(12, 2)
+  costPrice    Decimal  @default(0) @map("cost_price") @db.Decimal(12, 2)
+  categoryId   Int?     @map("category_id")
+  brand        String?
+  description  String?
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  category     Category? @relation(fields: [categoryId], references: [id])
+  images       ProductImage[]
+  inventory    Inventory[]
+  movements    InventoryMovement[]
+  documentItems DocumentItem[]
+  posItems     PosTransactionItem[]
+  purchaseItems PurchaseOrderItem[]
+  receiptItems GoodsReceiptItem[]
+  catalogItems CatalogItem[]
+
+  @@map("products")
+}
+
+model ProductImage {
+  id        Int     @id @default(autoincrement())
+  productId Int     @map("product_id")
+  imageUrl  String  @map("image_url")
+  isPrimary Boolean @default(false) @map("is_primary")
+  sortOrder Int     @default(0) @map("sort_order")
+
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_images")
+}
+
+// ═══════════════════════════════════════════
+// INVENTORY
+// ═══════════════════════════════════════════
+
+model Location {
+  id          Int     @id @default(autoincrement())
+  code        String  @unique
+  name        String
+  description String?
+
+  inventory   Inventory[]
+  movements   InventoryMovement[]
+  goodsReceipts GoodsReceipt[]
+
+  @@map("locations")
+}
+
+model Inventory {
+  id          Int      @id @default(autoincrement())
+  productId   Int      @map("product_id")
+  locationId  Int      @map("location_id")
+  quantity    Int      @default(0)
+  minQuantity Int      @default(0) @map("min_quantity")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  product     Product  @relation(fields: [productId], references: [id])
+  location    Location @relation(fields: [locationId], references: [id])
+
+  @@unique([productId, locationId])
+  @@map("inventory")
+}
+
+model InventoryMovement {
+  id            Int      @id @default(autoincrement())
+  productId     Int      @map("product_id")
+  locationId    Int      @map("location_id")
+  movementType  String   @map("movement_type") // IN, OUT, TRANSFER, ADJUSTMENT
+  quantity      Int
+  referenceType String?  @map("reference_type") // DOCUMENT, POS, GRN, MANUAL
+  referenceId   Int?     @map("reference_id")
+  note          String?
+  createdAt     DateTime @default(now()) @map("created_at")
+  createdBy     String?  @map("created_by")
+
+  product       Product  @relation(fields: [productId], references: [id])
+  location      Location @relation(fields: [locationId], references: [id])
+
+  @@map("inventory_movements")
+}
+
+// ═══════════════════════════════════════════
+// DOCUMENTS (QT, PO, INV, Receipt, etc.)
+// ═══════════════════════════════════════════
+
+enum DocumentType {
+  QUOTATION
+  PURCHASE_ORDER
+  INVOICE
+  RECEIPT
+  DELIVERY_NOTE
+  CREDIT_NOTE
+  DEBIT_NOTE
+}
+
+enum VatType {
+  IN_VAT
+  EX_VAT
+  NO_VAT
+}
+
+enum DocumentStatus {
+  DRAFT
+  SENT
+  APPROVED
+  PAID
+  CANCELLED
+}
+
+model Document {
+  id               Int            @id @default(autoincrement())
+  documentNo       String         @unique @map("document_no")
+  documentType     DocumentType   @map("document_type")
+  parentDocumentId Int?           @map("parent_document_id")
+  customerId       Int            @map("customer_id")
+  date             DateTime
+  validUntil       DateTime?      @map("valid_until")
+  dueDate          DateTime?      @map("due_date")
+  deliveryDate     DateTime?      @map("delivery_date")
+  paymentTerm      String?        @map("payment_term")
+  subtotal         Decimal        @default(0) @db.Decimal(12, 2)
+  discount         Decimal        @default(0) @db.Decimal(12, 2)
+  vatRate          Decimal        @default(7) @map("vat_rate") @db.Decimal(5, 2)
+  vatAmount        Decimal        @default(0) @map("vat_amount") @db.Decimal(12, 2)
+  total            Decimal        @default(0) @db.Decimal(12, 2)
+  vatType          VatType        @default(NO_VAT) @map("vat_type")
+  showImages       Boolean        @default(false) @map("show_images")
+  status           DocumentStatus @default(DRAFT)
+  referenceNo      String?        @map("reference_no")
+  notes            String?
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+  createdBy        String?        @map("created_by")
+
+  parentDocument   Document?      @relation("DocumentChain", fields: [parentDocumentId], references: [id])
+  childDocuments   Document[]     @relation("DocumentChain")
+  customer         Customer       @relation(fields: [customerId], references: [id])
+  items            DocumentItem[]
+  packingLists     PackingList[]
+  billingNoteItems BillingNoteItem[]
+
+  @@index([documentType])
+  @@index([customerId])
+  @@index([date])
+  @@map("documents")
+}
+
+model DocumentItem {
+  id          Int      @id @default(autoincrement())
+  documentId  Int      @map("document_id")
+  itemNo      Int      @map("item_no")
+  productId   Int?     @map("product_id")
+  description String
+  unit        String?
+  unitPrice   Decimal  @default(0) @map("unit_price") @db.Decimal(12, 2)
+  quantity    Decimal  @default(0) @db.Decimal(12, 2)
+  discount    Decimal  @default(0) @db.Decimal(12, 2)
+  amount      Decimal  @default(0) @db.Decimal(12, 2)
+  imageUrl    String?  @map("image_url")
+
+  document    Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  product     Product? @relation(fields: [productId], references: [id])
+  packingBoxItems PackingBoxItem[]
+
+  @@map("document_items")
+}
+
+// ═══════════════════════════════════════════
+// PACKING (ใบติดกล่อง)
+// ═══════════════════════════════════════════
+
+model PackingList {
+  id          Int      @id @default(autoincrement())
+  packingNo   String   @unique @map("packing_no")
+  documentId  Int      @map("document_id")
+  date        DateTime @default(now())
+  totalBoxes  Int      @default(0) @map("total_boxes")
+  notes       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  document    Document @relation(fields: [documentId], references: [id])
+  boxes       PackingBox[]
+
+  @@map("packing_lists")
+}
+
+model PackingBox {
+  id            Int     @id @default(autoincrement())
+  packingListId Int     @map("packing_list_id")
+  boxNumber     Int     @map("box_number")
+  boxLabel      String? @map("box_label")
+  weight        String?
+  dimensions    String?
+
+  packingList   PackingList @relation(fields: [packingListId], references: [id], onDelete: Cascade)
+  items         PackingBoxItem[]
+
+  @@map("packing_boxes")
+}
+
+model PackingBoxItem {
+  id              Int    @id @default(autoincrement())
+  packingBoxId    Int    @map("packing_box_id")
+  documentItemId  Int    @map("document_item_id")
+  quantity        Int
+
+  packingBox      PackingBox   @relation(fields: [packingBoxId], references: [id], onDelete: Cascade)
+  documentItem    DocumentItem @relation(fields: [documentItemId], references: [id])
+
+  @@map("packing_box_items")
+}
+
+// ═══════════════════════════════════════════
+// CATALOG (แคตตาล็อค)
+// ═══════════════════════════════════════════
+
+model Catalog {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  catalogType String   @map("catalog_type") // SHOP, QUOTATION
+  isPublic    Boolean  @default(false) @map("is_public")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  items       CatalogItem[]
+
+  @@map("catalogs")
+}
+
+model CatalogItem {
+  id          Int      @id @default(autoincrement())
+  catalogId   Int      @map("catalog_id")
+  productId   Int      @map("product_id")
+  customPrice Decimal? @map("custom_price") @db.Decimal(12, 2)
+  sortOrder   Int      @default(0) @map("sort_order")
+  isFeatured  Boolean  @default(false) @map("is_featured")
+
+  catalog     Catalog  @relation(fields: [catalogId], references: [id], onDelete: Cascade)
+  product     Product  @relation(fields: [productId], references: [id])
+
+  @@map("catalog_items")
+}
+
+// ═══════════════════════════════════════════
+// POS (ขายหน้าร้าน)
+// ═══════════════════════════════════════════
+
+model PosTransaction {
+  id              Int      @id @default(autoincrement())
+  transactionNo   String   @unique @map("transaction_no")
+  date            DateTime @default(now())
+  customerId      Int?     @map("customer_id")
+  subtotal        Decimal  @default(0) @db.Decimal(12, 2)
+  discount        Decimal  @default(0) @db.Decimal(12, 2)
+  vatAmount       Decimal  @default(0) @map("vat_amount") @db.Decimal(12, 2)
+  total           Decimal  @default(0) @db.Decimal(12, 2)
+  paymentMethod   String   @default("CASH") @map("payment_method") // CASH, TRANSFER, CREDIT
+  cashReceived    Decimal  @default(0) @map("cash_received") @db.Decimal(12, 2)
+  changeAmount    Decimal  @default(0) @map("change_amount") @db.Decimal(12, 2)
+  status          String   @default("COMPLETED") // COMPLETED, VOIDED
+  cashierId       String?  @map("cashier_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  customer        Customer? @relation(fields: [customerId], references: [id])
+  items           PosTransactionItem[]
+
+  @@index([date])
+  @@map("pos_transactions")
+}
+
+model PosTransactionItem {
+  id            Int     @id @default(autoincrement())
+  transactionId Int     @map("transaction_id")
+  productId     Int     @map("product_id")
+  description   String
+  unitPrice     Decimal @default(0) @map("unit_price") @db.Decimal(12, 2)
+  quantity      Int     @default(1)
+  discount      Decimal @default(0) @db.Decimal(12, 2)
+  amount        Decimal @default(0) @db.Decimal(12, 2)
+
+  transaction   PosTransaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  product       Product        @relation(fields: [productId], references: [id])
+
+  @@map("pos_transaction_items")
+}
+
+// ═══════════════════════════════════════════
+// PURCHASING (จัดซื้อ + รับเข้า)
+// ═══════════════════════════════════════════
+
+model PurchaseOrder {
+  id          Int      @id @default(autoincrement())
+  poNumber    String   @unique @map("po_number")
+  supplierId  Int      @map("supplier_id")
+  date        DateTime
+  subtotal    Decimal  @default(0) @db.Decimal(12, 2)
+  vatRate     Decimal  @default(7) @map("vat_rate") @db.Decimal(5, 2)
+  vatAmount   Decimal  @default(0) @map("vat_amount") @db.Decimal(12, 2)
+  total       Decimal  @default(0) @db.Decimal(12, 2)
+  hasVat      Boolean  @default(false) @map("has_vat")
+  status      String   @default("DRAFT") // DRAFT, SENT, RECEIVED, CANCELLED
+  notes       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  supplier    Supplier @relation(fields: [supplierId], references: [id])
+  items       PurchaseOrderItem[]
+  goodsReceipts GoodsReceipt[]
+
+  @@map("purchase_orders")
+}
+
+model PurchaseOrderItem {
+  id              Int     @id @default(autoincrement())
+  purchaseOrderId Int     @map("purchase_order_id")
+  productId       Int?    @map("product_id")
+  description     String
+  unitPrice       Decimal @default(0) @map("unit_price") @db.Decimal(12, 2)
+  quantity        Int     @default(1)
+  amount          Decimal @default(0) @db.Decimal(12, 2)
+
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  product         Product?      @relation(fields: [productId], references: [id])
+
+  @@map("purchase_order_items")
+}
+
+model GoodsReceipt {
+  id              Int      @id @default(autoincrement())
+  grnNumber       String   @unique @map("grn_number")
+  purchaseOrderId Int?     @map("purchase_order_id")
+  supplierId      Int      @map("supplier_id")
+  date            DateTime
+  hasVat          Boolean  @default(false) @map("has_vat")
+  vatAmount       Decimal  @default(0) @map("vat_amount") @db.Decimal(12, 2)
+  total           Decimal  @default(0) @db.Decimal(12, 2)
+  locationId      Int?     @map("location_id")
+  status          String   @default("RECEIVED") // RECEIVED, CANCELLED
+  notes           String?
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  purchaseOrder   PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id])
+  supplier        Supplier       @relation(fields: [supplierId], references: [id])
+  location        Location?      @relation(fields: [locationId], references: [id])
+  items           GoodsReceiptItem[]
+
+  @@map("goods_receipts")
+}
+
+model GoodsReceiptItem {
+  id               Int     @id @default(autoincrement())
+  goodsReceiptId   Int     @map("goods_receipt_id")
+  productId        Int     @map("product_id")
+  quantityOrdered  Int     @default(0) @map("quantity_ordered")
+  quantityReceived Int     @default(0) @map("quantity_received")
+  unitCost         Decimal @default(0) @map("unit_cost") @db.Decimal(12, 2)
+
+  goodsReceipt     GoodsReceipt @relation(fields: [goodsReceiptId], references: [id], onDelete: Cascade)
+  product          Product      @relation(fields: [productId], references: [id])
+
+  @@map("goods_receipt_items")
+}
+
+// ═══════════════════════════════════════════
+// BILLING NOTES (ใบวางบิล)
+// ═══════════════════════════════════════════
+
+model BillingNote {
+  id          Int      @id @default(autoincrement())
+  billingNo   String   @unique @map("billing_no")
+  customerId  Int      @map("customer_id")
+  date        DateTime
+  dueDate     DateTime? @map("due_date")
+  status      String   @default("PENDING") // PENDING, PAID, CANCELLED
+  notes       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  customer    Customer @relation(fields: [customerId], references: [id])
+  items       BillingNoteItem[]
+
+  @@map("billing_notes")
+}
+
+model BillingNoteItem {
+  id            Int     @id @default(autoincrement())
+  billingNoteId Int     @map("billing_note_id")
+  documentId    Int     @map("document_id")
+
+  billingNote   BillingNote @relation(fields: [billingNoteId], references: [id], onDelete: Cascade)
+  document      Document    @relation(fields: [documentId], references: [id])
+
+  @@map("billing_note_items")
+}

@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+@media print {
+  body {
+    background: white !important;
+  }
+  aside, .print\\:hidden {
+    display: none !important;
+  }
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  #print-area > div {
+    page-break-inside: avoid;
+    margin-bottom: 2rem;
+  }
+}
