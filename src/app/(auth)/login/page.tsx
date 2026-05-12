@@ -18,19 +18,26 @@ function LoginForm() {
     setLoading(true);
     setError("");
 
-    const result = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
-
-    if (result?.error) {
-      setError("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
-      setLoading(false);
-    } else {
+    try {
       const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
-      router.push(callbackUrl);
-      router.refresh();
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+        callbackUrl,
+      });
+
+      if (result?.error) {
+        setError("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
+        setLoading(false);
+      } else if (result?.url) {
+        window.location.href = result.url;
+      } else {
+        window.location.href = callbackUrl;
+      }
+    } catch {
+      setError("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง");
+      setLoading(false);
     }
   }
 
