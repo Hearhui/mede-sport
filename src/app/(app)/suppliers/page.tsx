@@ -20,6 +20,11 @@ export default async function SuppliersPage() {
         </Link>
       </div>
 
+      <form className="mb-6">
+        <input type="text" name="search" placeholder="ค้นหาผู้ขาย..."
+          className="w-full md:w-96 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+      </form>
+
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 border-b border-gray-200">
