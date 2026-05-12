@@ -131,12 +131,24 @@ model Product {
   categoryId   Int?     @map("category_id")
   brand        String?
   description  String?
+  // Extended details
+  sku          String?
+  barcode      String?
+  color        String?
+  size         String?
+  weight       String?
+  material     String?
+  origin       String?  // แหล่งผลิต/นำเข้า
+  warranty     String?  // การรับประกัน
+  minOrder     Int?     @map("min_order") // สั่งขั้นต่ำ
+  specifications String? @db.Text // รายละเอียด spec เพิ่มเติม
   isActive     Boolean  @default(true) @map("is_active")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
   category     Category? @relation(fields: [categoryId], references: [id])
   images       ProductImage[]
+  attachments  ProductAttachment[]
   inventory    Inventory[]
   movements    InventoryMovement[]
   documentItems DocumentItem[]
@@ -146,6 +158,21 @@ model Product {
   catalogItems CatalogItem[]
 
   @@map("products")
+}
+
+model ProductAttachment {
+  id        Int     @id @default(autoincrement())
+  productId Int     @map("product_id")
+  fileName  String  @map("file_name")
+  fileUrl   String  @map("file_url")
+  fileType  String? @map("file_type") // pdf, doc, xlsx
+  fileSize  Int?    @map("file_size") // bytes
+  note      String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_attachments")
 }
 
 model ProductImage {

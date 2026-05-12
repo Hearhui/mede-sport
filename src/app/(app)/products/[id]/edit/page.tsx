@@ -4,11 +4,21 @@ import EntityForm from "@/components/EntityForm";
 
 const fields = [
   { name: "name", label: "ชื่อสินค้า", required: true },
-  { name: "unit", label: "หน่วย" },
+  { name: "unit", label: "หน่วย", placeholder: "อัน, คู่, ชุด, ลูก" },
   { name: "sellingPrice", label: "ราคาขาย", type: "number", required: true },
   { name: "costPrice", label: "ราคาทุน", type: "number" },
   { name: "brand", label: "แบรนด์" },
-  { name: "description", label: "รายละเอียด" },
+  { name: "sku", label: "SKU" },
+  { name: "barcode", label: "Barcode" },
+  { name: "color", label: "สี" },
+  { name: "size", label: "ขนาด", placeholder: "เช่น S, M, L, XL หรือ 40x30 cm" },
+  { name: "weight", label: "น้ำหนัก", placeholder: "เช่น 500g, 1.2kg" },
+  { name: "material", label: "วัสดุ", placeholder: "เช่น PVC, PU, หนังแท้" },
+  { name: "origin", label: "แหล่งผลิต/นำเข้า", placeholder: "เช่น ไทย, จีน, ญี่ปุ่น" },
+  { name: "warranty", label: "การรับประกัน", placeholder: "เช่น 1 ปี, 6 เดือน" },
+  { name: "minOrder", label: "สั่งขั้นต่ำ", type: "number" },
+  { name: "description", label: "รายละเอียดสินค้า" },
+  { name: "specifications", label: "Specifications (เพิ่มเติม)" },
 ];
 
 export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
@@ -25,7 +35,11 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
       initialData={{
         name: product.name, unit: product.unit,
         sellingPrice: Number(product.sellingPrice), costPrice: Number(product.costPrice),
-        brand: product.brand, description: product.description,
+        brand: product.brand, sku: product.sku, barcode: product.barcode,
+        color: product.color, size: product.size, weight: product.weight,
+        material: product.material, origin: product.origin, warranty: product.warranty,
+        minOrder: product.minOrder, description: product.description,
+        specifications: product.specifications,
       }}
       method="PUT"
     />

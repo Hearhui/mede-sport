@@ -23,6 +23,16 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       costPrice: body.costPrice,
       brand: body.brand || null,
       description: body.description || null,
+      sku: body.sku || null,
+      barcode: body.barcode || null,
+      color: body.color || null,
+      size: body.size || null,
+      weight: body.weight || null,
+      material: body.material || null,
+      origin: body.origin || null,
+      warranty: body.warranty || null,
+      minOrder: body.minOrder || null,
+      specifications: body.specifications || null,
     },
   });
   return NextResponse.json(product);

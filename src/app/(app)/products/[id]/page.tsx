@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import DeleteButton from "@/components/DeleteButton";
 import ProductImageManager from "./ProductImageManager";
+import ProductAttachments from "./ProductAttachments";
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -10,6 +11,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     where: { id: parseInt(id) },
     include: {
       images: { orderBy: { sortOrder: "asc" } },
+      attachments: { orderBy: { createdAt: "desc" } },
       inventory: { include: { location: true }, orderBy: { quantity: "desc" } },
       category: true,
     },
@@ -125,10 +127,51 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           {product.description && (
             <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
               <h3 className="font-semibold text-gray-900 mb-2">รายละเอียดสินค้า</h3>
-              <p className="text-sm text-gray-600">{product.description}</p>
+              <p className="text-sm text-gray-600 whitespace-pre-wrap">{product.description}</p>
             </div>
           )}
+
+          {/* Extended Details */}
+          {(() => {
+            const details = [
+              { label: "SKU", value: product.sku },
+              { label: "Barcode", value: product.barcode },
+              { label: "สี", value: product.color },
+              { label: "ขนาด", value: product.size },
+              { label: "น้ำหนัก", value: product.weight },
+              { label: "วัสดุ", value: product.material },
+              { label: "แหล่งผลิต", value: product.origin },
+              { label: "การรับประกัน", value: product.warranty },
+              { label: "สั่งขั้นต่ำ", value: product.minOrder ? `${product.minOrder} ${product.unit}` : null },
+            ].filter((d) => d.value);
+
+            return details.length > 0 ? (
+              <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+                <h3 className="font-semibold text-gray-900 mb-3">ข้อมูลจำเพาะ</h3>
+                <dl className="grid grid-cols-2 gap-2 text-sm">
+                  {details.map((d) => (
+                    <div key={d.label} className="flex gap-2">
+                      <dt className="text-gray-500 shrink-0 w-24">{d.label}</dt>
+                      <dd className="text-gray-900 font-medium">{d.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+                {product.specifications && (
+                  <div className="mt-3 pt-3 border-t">
+                    <p className="text-xs text-gray-500 mb-1">Specifications</p>
+                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{product.specifications}</p>
+                  </div>
+                )}
+              </div>
+            ) : null;
+          })()}
         </div>
+      </div>
+
+      {/* Attachments */}
+      <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm mb-6">
+        <h3 className="font-semibold text-gray-900 mb-4">เอกสารแนบ</h3>
+        <ProductAttachments productId={product.id} attachments={product.attachments} />
       </div>
 
       {/* Movement History */}
