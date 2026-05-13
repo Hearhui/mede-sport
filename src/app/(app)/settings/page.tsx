@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 
-type Tab = "business" | "document" | "numbering" | "admin";
+type Tab = "business" | "document" | "numbering" | "backup" | "yearend" | "admin";
 
 export default function SettingsPage() {
   const [data, setData] = useState<any>(null);
@@ -55,10 +55,17 @@ export default function SettingsPage() {
 
   if (!data) return <div className="p-8 text-gray-400">กำลังโหลด...</div>;
 
+  // Year-end state
+  const [yearEndKeep, setYearEndKeep] = useState({ keepProducts: true, keepCustomers: true, keepSuppliers: true, keepInventory: true, keepLocations: true });
+  const [yearEndConfirm, setYearEndConfirm] = useState("");
+  const [yearEndResult, setYearEndResult] = useState("");
+
   const tabs: { key: Tab; label: string }[] = [
     { key: "business", label: "ข้อมูลธุรกิจ" },
     { key: "document", label: "ข้อความเอกสาร" },
     { key: "numbering", label: "เลขเอกสาร & VAT" },
+    { key: "backup", label: "Backup" },
+    { key: "yearend", label: "ปิดปี" },
     { key: "admin", label: "จัดการข้อมูล" },
   ];
 
@@ -69,7 +76,7 @@ export default function SettingsPage() {
           <h1 className="text-2xl font-bold text-gray-900">ตั้งค่าระบบ</h1>
           <p className="text-gray-500 mt-1">ข้อมูลธุรกิจ เอกสาร และระบบ</p>
         </div>
-        {tab !== "admin" && (
+        {!["admin", "backup", "yearend"].includes(tab) && (
           <button onClick={handleSave} disabled={saving}
             className="px-6 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50">
             {saving ? "กำลังบันทึก..." : saved ? "บันทึกแล้ว" : "บันทึก"}
@@ -195,6 +202,86 @@ export default function SettingsPage() {
             <Field label="ใบเสร็จรับเงิน" value={data.docPrefixReceipt} onChange={(v) => setData({ ...data, docPrefixReceipt: v })} placeholder="RC" />
             <Field label="ใบส่งสินค้า" value={data.docPrefixDelivery} onChange={(v) => setData({ ...data, docPrefixDelivery: v })} placeholder="DN" />
             <Field label="ใบสั่งซื้อ" value={data.docPrefixPo} onChange={(v) => setData({ ...data, docPrefixPo: v })} placeholder="PO" />
+          </div>
+        </div>
+      )}
+
+      {tab === "backup" && (
+        <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-6">
+          <h2 className="text-lg font-bold text-gray-900 border-b pb-3">Backup & Restore</h2>
+          <p className="text-sm text-gray-500">สำรองข้อมูลทั้งหมดเป็นไฟล์ JSON เพื่อกู้คืนกรณีระบบมีปัญหา</p>
+          <div className="flex gap-4">
+            <a href="/api/admin/backup" download
+              className="px-6 py-3 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 flex items-center gap-2">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Download Backup (JSON)
+            </a>
+          </div>
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm text-yellow-700">
+            <p className="font-medium">วิธีการ Backup:</p>
+            <ol className="list-decimal ml-5 mt-2 space-y-1">
+              <li>กด "Download Backup" เพื่อดาวน์โหลดไฟล์สำรองข้อมูล</li>
+              <li>เก็บไฟล์ไว้ในที่ปลอดภัย (Google Drive, Dropbox, USB)</li>
+              <li>ควร Backup อย่างน้อยสัปดาห์ละ 1 ครั้ง</li>
+            </ol>
+            <p className="mt-3 font-medium">การ Restore:</p>
+            <p className="mt-1">ติดต่อผู้ดูแลระบบเพื่อนำไฟล์ Backup กลับมาใช้</p>
+          </div>
+        </div>
+      )}
+
+      {tab === "yearend" && (
+        <div className="space-y-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <h2 className="text-lg font-bold text-gray-900 border-b pb-3 mb-4">ปิดปี / ขึ้นปีใหม่</h2>
+            <p className="text-sm text-gray-500 mb-6">ลบเอกสาร/POS/รายจ่ายของปีที่ผ่านมา แล้วเลือกว่าจะเก็บข้อมูลอะไรยกไปปีใหม่</p>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <p className="font-medium text-blue-700 mb-3">เลือกข้อมูลที่ต้องการเก็บยกไปปีใหม่:</p>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { key: "keepProducts", label: "สินค้า" },
+                  { key: "keepCustomers", label: "ลูกค้า" },
+                  { key: "keepSuppliers", label: "ซัพพลายเออร์" },
+                  { key: "keepInventory", label: "สต็อคสินค้า (ยกยอด)" },
+                  { key: "keepLocations", label: "Location คลัง" },
+                ].map((item) => (
+                  <label key={item.key} className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" checked={(yearEndKeep as any)[item.key]}
+                      onChange={(e) => setYearEndKeep({ ...yearEndKeep, [item.key]: e.target.checked })}
+                      className="w-4 h-4 rounded" />
+                    <span className="text-sm text-gray-700">{item.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+              <p className="text-sm text-red-600 mb-2"><strong>ข้อมูลที่จะถูกลบ:</strong> เอกสารทั้งหมด, POS, ใบรับสินค้า, รายจ่าย, ประวัติสต็อค</p>
+              <p className="text-xs text-red-500">กรุณา Backup ก่อนปิดปี!</p>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <input type="text" value={yearEndConfirm} onChange={(e) => setYearEndConfirm(e.target.value)}
+                placeholder='พิมพ์ "ปิดปี" เพื่อยืนยัน' className="px-3 py-2 border border-red-300 rounded-lg text-sm w-48" />
+              <button onClick={async () => {
+                setResetting(true);
+                const res = await fetch("/api/admin/year-end", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(yearEndKeep),
+                });
+                const data = await res.json();
+                setYearEndResult(data.message || data.error);
+                setResetting(false);
+              }} disabled={yearEndConfirm !== "ปิดปี" || resetting}
+                className="px-6 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 disabled:opacity-50">
+                {resetting ? "กำลังปิดปี..." : "ปิดปี & ขึ้นปีใหม่"}
+              </button>
+            </div>
+            {yearEndResult && <div className="mt-4 p-4 bg-white rounded-lg border text-sm whitespace-pre-line">{yearEndResult}</div>}
           </div>
         </div>
       )}

@@ -432,6 +432,27 @@ model CatalogItem {
 }
 
 // ═══════════════════════════════════════════
+// EXPENSES (รายจ่าย)
+// ═══════════════════════════════════════════
+
+model Expense {
+  id          Int      @id @default(autoincrement())
+  date        DateTime @default(now())
+  category    String   // ค่าเช่า, ค่าน้ำ, ค่าไฟ, ค่าขนส่ง, เงินเดือน, อื่นๆ
+  description String
+  amount      Decimal  @db.Decimal(12, 2)
+  paymentMethod String? @map("payment_method") // CASH, TRANSFER, CREDIT
+  receiptUrl  String?  @map("receipt_url") // ภาพบิล/ใบเสร็จ
+  notes       String?
+  createdBy   String?  @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([date])
+  @@map("expenses")
+}
+
+// ═══════════════════════════════════════════
 // POS (ขายหน้าร้าน)
 // ═══════════════════════════════════════════
 
