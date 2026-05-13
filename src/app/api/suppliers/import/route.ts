@@ -28,7 +28,6 @@ export async function POST(req: NextRequest) {
       taxId: row["เลขผู้เสียภาษี"]?.toString() || null,
       phone: row["โทร"]?.toString() || null,
       contactName: row["ผู้ติดต่อ"] || null,
-      creditTermDays: parseInt(row["เครดิต(วัน)"]) || 0,
     };
 
     try {

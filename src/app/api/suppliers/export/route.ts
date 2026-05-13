@@ -33,7 +33,6 @@ export async function GET(req: NextRequest) {
     "เลขผู้เสียภาษี": s.taxId || "",
     "โทร": s.phone || "",
     "ผู้ติดต่อ": s.contactName || "",
-    "เครดิต(วัน)": s.creditTermDays,
   }));
 
   const ws = XLSX.utils.json_to_sheet(rows);
