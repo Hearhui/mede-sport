@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 type Customer = { id: number; customerCode: string; name: string };
 type Item = {
   productId: number | null;
+  itemType: "product" | "service";
   description: string;
   unit: string;
   unitPrice: number;
@@ -27,7 +28,7 @@ export default function DocumentForm({
   const [showImages, setShowImages] = useState(false);
   const [notes, setNotes] = useState("");
   const [items, setItems] = useState<Item[]>([
-    { productId: null, description: "", unit: "อัน", unitPrice: 0, quantity: 1 },
+    { productId: null, itemType: "product", description: "", unit: "อัน", unitPrice: 0, quantity: 1 },
   ]);
 
   // Product search
@@ -49,6 +50,7 @@ export default function DocumentForm({
     const newItems = [...items];
     newItems[idx] = {
       productId: product.id,
+      itemType: "product",
       description: product.name,
       unit: product.unit,
       unitPrice: Number(product.sellingPrice),
@@ -65,8 +67,11 @@ export default function DocumentForm({
     setItems(newItems);
   }
 
-  function addItem() {
-    setItems([...items, { productId: null, description: "", unit: "อัน", unitPrice: 0, quantity: 1 }]);
+  function addItem(type: "product" | "service" = "product") {
+    setItems([...items, {
+      productId: null, itemType: type, description: "",
+      unit: type === "service" ? "งาน" : "อัน", unitPrice: 0, quantity: 1,
+    }]);
   }
 
   function removeItem(idx: number) {
@@ -232,24 +237,28 @@ export default function DocumentForm({
       {/* Items */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-semibold text-gray-900">รายการสินค้า</h2>
-          <button
-            type="button"
-            onClick={addItem}
-            className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-          >
-            + เพิ่มรายการ
-          </button>
+          <h2 className="font-semibold text-gray-900">รายการสินค้า / บริการ</h2>
+          <div className="flex gap-2">
+            <button type="button" onClick={() => addItem("product")}
+              className="text-blue-600 hover:text-blue-700 text-sm font-medium">+ สินค้า</button>
+            <button type="button" onClick={() => addItem("service")}
+              className="text-green-600 hover:text-green-700 text-sm font-medium">+ บริการ</button>
+          </div>
         </div>
 
         <div className="space-y-3">
           {items.map((item, idx) => (
-            <div key={idx} className="flex gap-3 items-start p-3 bg-gray-50 rounded-lg">
-              <span className="text-xs text-gray-400 mt-3 w-6">{idx + 1}</span>
+            <div key={idx} className={`flex gap-3 items-start p-3 rounded-lg ${item.itemType === "service" ? "bg-green-50" : "bg-gray-50"}`}>
+              <div className="mt-3 w-6 text-center">
+                <span className="text-xs text-gray-400">{idx + 1}</span>
+                <span className={`block text-[9px] mt-0.5 ${item.itemType === "service" ? "text-green-600" : "text-blue-500"}`}>
+                  {item.itemType === "service" ? "บริการ" : "สินค้า"}
+                </span>
+              </div>
               <div className="flex-1 relative">
                 <input
                   type="text"
-                  placeholder="ชื่อสินค้า (พิมพ์เพื่อค้นหาจาก stock หรือพิมพ์ใหม่)"
+                  placeholder={item.itemType === "service" ? "รายละเอียดบริการ (พิมพ์ได้อิสระ)" : "ชื่อสินค้า (พิมพ์เพื่อค้นหาจาก stock หรือพิมพ์ใหม่)"}
                   value={item.description}
                   onChange={(e) => {
                     updateItem(idx, "description", e.target.value);

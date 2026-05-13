@@ -32,6 +32,13 @@ model CompanyInfo {
   id        Int      @id @default(autoincrement())
   name      String
   nameEn    String?  @map("name_en")
+  // Business info
+  businessType    String?  @map("business_type")       // ประเภทธุรกิจ (ขายปลีก/ขายส่ง/บริการ/ผลิต)
+  businessDesc    String?  @map("business_desc")       // รายละเอียดธุรกิจ
+  website         String?
+  lineId          String?  @map("line_id")
+  email           String?
+  // Address
   address1  String?  @map("address_line1")
   address2  String?  @map("address_line2")
   subdistrict String?
@@ -43,13 +50,22 @@ model CompanyInfo {
   phone     String?
   fax       String?
   logoUrl   String?  @map("logo_url")
+  // VAT settings
+  vatEnabled      Boolean  @default(true) @map("vat_enabled")
+  vatRate         Decimal  @default(7) @map("vat_rate") @db.Decimal(5, 2)
+  // Document number prefix
+  docPrefixQuote    String? @default("QT") @map("doc_prefix_quote")
+  docPrefixInvoice  String? @default("INV") @map("doc_prefix_invoice")
+  docPrefixReceipt  String? @default("RC") @map("doc_prefix_receipt")
+  docPrefixDelivery String? @default("DN") @map("doc_prefix_delivery")
+  docPrefixPo       String? @default("PO") @map("doc_prefix_po")
   // Document settings (ข้อความในเอกสาร)
-  docFooterText   String? @map("doc_footer_text")     // ข้อความท้ายเอกสาร
-  docSignerLeft   String? @map("doc_signer_left")     // ลายเซ็นซ้าย (ผู้ออกเอกสาร)
-  docSignerCenter String? @map("doc_signer_center")   // ลายเซ็นกลาง (ผู้อนุมัติ)
-  docSignerRight  String? @map("doc_signer_right")    // ลายเซ็นขวา (ผู้รับ)
-  docNoteDefault  String? @map("doc_note_default")    // หมายเหตุเริ่มต้น
-  docBankInfo     String? @map("doc_bank_info")       // ข้อมูลบัญชีธนาคาร
+  docFooterText   String? @map("doc_footer_text")
+  docSignerLeft   String? @map("doc_signer_left")
+  docSignerCenter String? @map("doc_signer_center")
+  docSignerRight  String? @map("doc_signer_right")
+  docNoteDefault  String? @map("doc_note_default")
+  docBankInfo     String? @map("doc_bank_info")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
