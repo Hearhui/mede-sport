@@ -14,7 +14,15 @@ export default function SettingsPage() {
   const [resetResult, setResetResult] = useState("");
 
   useEffect(() => {
-    fetch("/api/company-info").then((r) => r.json()).then(setData);
+    fetch("/api/company-info").then((r) => r.json()).then((d) => {
+      // Ensure all fields have defaults to prevent null errors
+      setData({
+        vatEnabled: true, vatRate: 7,
+        docPrefixQuote: "QT", docPrefixInvoice: "INV", docPrefixReceipt: "RC",
+        docPrefixDelivery: "DN", docPrefixPo: "PO",
+        ...d,
+      });
+    });
   }, []);
 
   async function handleSave() {
