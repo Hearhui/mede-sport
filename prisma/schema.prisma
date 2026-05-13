@@ -98,6 +98,7 @@ model Customer {
   documents      Document[]
   posTransactions PosTransaction[]
   billingNotes   BillingNote[]
+  catalogs       Catalog[]
 
   @@map("customers")
 }
@@ -396,14 +397,21 @@ model PackingBoxItem {
 // ═══════════════════════════════════════════
 
 model Catalog {
-  id          Int      @id @default(autoincrement())
-  name        String
-  description String?
-  catalogType String   @map("catalog_type") // SHOP, QUOTATION
-  isPublic    Boolean  @default(false) @map("is_public")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id            Int      @id @default(autoincrement())
+  name          String
+  description   String?
+  catalogType   String   @map("catalog_type") // SHOP, QUOTATION
+  isPublic      Boolean  @default(false) @map("is_public")
+  customerId    Int?     @map("customer_id")
+  coverTitle    String?  @map("cover_title")     // หัวข้อหน้าปก
+  coverSubtitle String?  @map("cover_subtitle")  // ข้อความรอง
+  introText     String?  @map("intro_text")      // ข้อความนำเสนอ
+  closingText   String?  @map("closing_text")    // ข้อความปิดท้าย
+  validUntil    DateTime? @map("valid_until")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
+  customer    Customer? @relation(fields: [customerId], references: [id])
   items       CatalogItem[]
 
   @@map("catalogs")

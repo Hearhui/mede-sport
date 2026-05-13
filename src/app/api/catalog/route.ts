@@ -20,6 +20,12 @@ export async function POST(req: NextRequest) {
       description: body.description,
       catalogType: body.catalogType || "SHOP",
       isPublic: body.isPublic || false,
+      customerId: body.customerId || null,
+      coverTitle: body.coverTitle || null,
+      coverSubtitle: body.coverSubtitle || null,
+      introText: body.introText || null,
+      closingText: body.closingText || null,
+      validUntil: body.validUntil ? new Date(body.validUntil) : null,
       items: {
         create: (body.items || []).map((item: any, idx: number) => ({
           productId: item.productId,
