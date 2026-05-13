@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import DeleteButton from "@/components/DeleteButton";
+import ImportExportBar from "@/components/ImportExportBar";
 
 export default async function SuppliersPage() {
   const suppliers = await prisma.supplier.findMany({
@@ -18,6 +19,10 @@ export default async function SuppliersPage() {
         <Link href="/suppliers/new" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium">
           + เพิ่มผู้ขาย
         </Link>
+      </div>
+
+      <div className="mb-4">
+        <ImportExportBar exportUrl="/api/suppliers/export" templateUrl="/api/suppliers/export?template=1" importUrl="/api/suppliers/import" entityName="ผู้ขาย" />
       </div>
 
       <form className="mb-6">

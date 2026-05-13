@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import DeleteButton from "@/components/DeleteButton";
+import ImportExportBar from "@/components/ImportExportBar";
 
 export default async function ProductsPage({
   searchParams,
@@ -48,6 +49,16 @@ export default async function ProductsPage({
         <Link href="/products/new" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium">
           + เพิ่มสินค้า
         </Link>
+      </div>
+
+      {/* Import/Export */}
+      <div className="mb-4">
+        <ImportExportBar
+          exportUrl="/api/products/export"
+          templateUrl="/api/products/export?template=1"
+          importUrl="/api/products/import"
+          entityName="สินค้า"
+        />
       </div>
 
       {/* Search */}

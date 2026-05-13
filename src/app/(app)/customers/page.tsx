@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import DeleteButton from "@/components/DeleteButton";
+import ImportExportBar from "@/components/ImportExportBar";
 
 export default async function CustomersPage({
   searchParams,
@@ -47,6 +48,10 @@ export default async function CustomersPage({
         <Link href="/customers/new" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium">
           + เพิ่มลูกค้า
         </Link>
+      </div>
+
+      <div className="mb-4">
+        <ImportExportBar exportUrl="/api/customers/export" templateUrl="/api/customers/export?template=1" importUrl="/api/customers/import" entityName="ลูกค้า" />
       </div>
 
       <form className="mb-6">
