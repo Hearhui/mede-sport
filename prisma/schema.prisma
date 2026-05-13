@@ -66,6 +66,7 @@ model CompanyInfo {
   docSignerRight  String? @map("doc_signer_right")
   docNoteDefault  String? @map("doc_note_default")
   docBankInfo     String? @map("doc_bank_info")
+  docConditions   String? @map("doc_conditions") @db.Text // เงื่อนไข/conditions ที่แสดงท้ายเอกสาร
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -302,6 +303,8 @@ model Document {
   paymentTerm      String?        @map("payment_term")
   subtotal         Decimal        @default(0) @db.Decimal(12, 2)
   discount         Decimal        @default(0) @db.Decimal(12, 2)
+  deposit          Decimal        @default(0) @db.Decimal(12, 2)         // เงินมัดจำ
+  shippingCost     Decimal        @default(0) @map("shipping_cost") @db.Decimal(12, 2) // ค่าส่งสินค้า
   vatRate          Decimal        @default(7) @map("vat_rate") @db.Decimal(5, 2)
   vatAmount        Decimal        @default(0) @map("vat_amount") @db.Decimal(12, 2)
   total            Decimal        @default(0) @db.Decimal(12, 2)

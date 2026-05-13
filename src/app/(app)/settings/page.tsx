@@ -13,6 +13,11 @@ export default function SettingsPage() {
   const [resetting, setResetting] = useState(false);
   const [resetResult, setResetResult] = useState("");
 
+  // Year-end state (must be before any conditional return)
+  const [yearEndKeep, setYearEndKeep] = useState({ keepProducts: true, keepCustomers: true, keepSuppliers: true, keepInventory: true, keepLocations: true });
+  const [yearEndConfirm, setYearEndConfirm] = useState("");
+  const [yearEndResult, setYearEndResult] = useState("");
+
   useEffect(() => {
     fetch("/api/company-info").then((r) => r.json()).then((d) => {
       // Ensure all fields have defaults to prevent null errors
@@ -62,11 +67,6 @@ export default function SettingsPage() {
   }
 
   if (!data) return <div className="p-8 text-gray-400">กำลังโหลด...</div>;
-
-  // Year-end state
-  const [yearEndKeep, setYearEndKeep] = useState({ keepProducts: true, keepCustomers: true, keepSuppliers: true, keepInventory: true, keepLocations: true });
-  const [yearEndConfirm, setYearEndConfirm] = useState("");
-  const [yearEndResult, setYearEndResult] = useState("");
 
   const tabs: { key: Tab; label: string }[] = [
     { key: "business", label: "ข้อมูลธุรกิจ" },
@@ -181,6 +181,10 @@ export default function SettingsPage() {
           <FieldTextarea label="ข้อความท้ายเอกสาร" value={data.docFooterText} onChange={(v) => setData({ ...data, docFooterText: v })} placeholder="เช่น สินค้าที่ส่งมอบแล้วไม่สามารถเปลี่ยนหรือคืนได้" />
           <FieldTextarea label="หมายเหตุเริ่มต้น" value={data.docNoteDefault} onChange={(v) => setData({ ...data, docNoteDefault: v })} />
           <FieldTextarea label="ข้อมูลบัญชีธนาคาร" value={data.docBankInfo} onChange={(v) => setData({ ...data, docBankInfo: v })} placeholder="ธ.กสิกรไทย 000-0-00000-0 บจก. ..." />
+
+          <h3 className="text-sm font-semibold text-gray-700 pt-2">เงื่อนไข / Conditions</h3>
+          <FieldTextarea label="เงื่อนไขในเอกสาร (แสดงท้ายเอกสาร)" value={data.docConditions} onChange={(v) => setData({ ...data, docConditions: v })}
+            placeholder={"1.ชำระค่าสินค้าเต็ม 100%\n2.ระยะเวลาในการจัดเตรียมสินค้า 5-7 วันทำการ\n3.ยอดสั่ง 10,000 บาทขึ้นไปส่งฟรี\n4.โอนเงินเข้าบัญชี ธ.กสิกรไทย..."} />
         </div>
       )}
 
@@ -281,8 +285,8 @@ export default function SettingsPage() {
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify(yearEndKeep),
                 });
-                const data = await res.json();
-                setYearEndResult(data.message || data.error);
+                const result = await res.json();
+                setYearEndResult(result.message || result.error);
                 setResetting(false);
               }} disabled={yearEndConfirm !== "ปิดปี" || resetting}
                 className="px-6 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 disabled:opacity-50">

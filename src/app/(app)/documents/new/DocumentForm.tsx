@@ -26,6 +26,9 @@ export default function DocumentForm({
   const [paymentTerm, setPaymentTerm] = useState("Cash");
   const [vatType, setVatType] = useState("IN_VAT");
   const [showImages, setShowImages] = useState(false);
+  const [discount, setDiscount] = useState(0);
+  const [deposit, setDeposit] = useState(0);
+  const [shippingCost, setShippingCost] = useState(0);
   const [notes, setNotes] = useState("");
   const [items, setItems] = useState<Item[]>([
     { productId: null, itemType: "product", description: "", unit: "อัน", unitPrice: 0, quantity: 1 },
@@ -80,15 +83,19 @@ export default function DocumentForm({
   }
 
   const subtotal = items.reduce((s, i) => s + i.unitPrice * i.quantity, 0);
+  const balanceAfterDiscount = subtotal - discount;
   const vatRate = 7;
   let vatAmount = 0;
-  let total = subtotal;
+  let total = balanceAfterDiscount;
   if (vatType === "EX_VAT") {
-    vatAmount = subtotal * (vatRate / 100);
-    total = subtotal + vatAmount;
+    vatAmount = balanceAfterDiscount * (vatRate / 100);
+    total = balanceAfterDiscount + vatAmount;
   } else if (vatType === "IN_VAT") {
-    vatAmount = subtotal - subtotal / (1 + vatRate / 100);
+    vatAmount = balanceAfterDiscount - balanceAfterDiscount / (1 + vatRate / 100);
   }
+  const netBeforeVat = balanceAfterDiscount - vatAmount;
+  const grandTotal = total + shippingCost;
+  const paymentTotal = grandTotal - deposit;
 
   const filteredCustomers = customerSearch
     ? customers.filter(
@@ -121,6 +128,9 @@ export default function DocumentForm({
           paymentTerm,
           vatType,
           showImages,
+          discount,
+          deposit,
+          shippingCost,
           notes,
           items: items.filter((i) => i.description),
         }),
@@ -322,20 +332,51 @@ export default function DocumentForm({
 
         {/* Totals */}
         <div className="mt-6 flex justify-end">
-          <div className="w-72 space-y-2 text-sm">
+          <div className="w-80 space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-gray-500">รวมเงิน</span>
-              <span className="font-medium">฿{subtotal.toLocaleString()}</span>
+              <span className="text-gray-500">ยอดรวมทั้งสิ้น / Sub Total</span>
+              <span className="font-medium">฿{subtotal.toLocaleString("th-TH", { minimumFractionDigits: 2 })}</span>
             </div>
-            {vatType !== "NO_VAT" && (
+            <div className="flex justify-between items-center">
+              <span className="text-gray-500">หักส่วนลด / Discount</span>
+              <input type="number" value={discount || ""} onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
+                className="w-32 px-2 py-1 border border-gray-300 rounded text-sm text-right" placeholder="0.00" />
+            </div>
+            {discount > 0 && (
               <div className="flex justify-between">
-                <span className="text-gray-500">VAT {vatRate}%</span>
-                <span className="font-medium">฿{Math.round(vatAmount).toLocaleString()}</span>
+                <span className="text-gray-500">ยอดคงเหลือ / Balance</span>
+                <span className="font-medium">฿{balanceAfterDiscount.toLocaleString("th-TH", { minimumFractionDigits: 2 })}</span>
               </div>
             )}
+            <div className="flex justify-between items-center">
+              <span className="text-gray-500">หักเงินมัดจำ / Deposit</span>
+              <input type="number" value={deposit || ""} onChange={(e) => setDeposit(parseFloat(e.target.value) || 0)}
+                className="w-32 px-2 py-1 border border-gray-300 rounded text-sm text-right" placeholder="0.00" />
+            </div>
+            {vatType !== "NO_VAT" && (
+              <>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">มูลค่าสินค้าสุทธิ / Net</span>
+                  <span className="font-medium">฿{netBeforeVat.toLocaleString("th-TH", { minimumFractionDigits: 2 })}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">ภาษีมูลค่าเพิ่ม {vatRate}%</span>
+                  <span className="font-medium">฿{vatAmount.toLocaleString("th-TH", { minimumFractionDigits: 2 })}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">ยอดรวม / Total</span>
+                  <span className="font-medium">฿{total.toLocaleString("th-TH", { minimumFractionDigits: 2 })}</span>
+                </div>
+              </>
+            )}
+            <div className="flex justify-between items-center">
+              <span className="text-gray-500">ค่าส่งสินค้า / Shipping</span>
+              <input type="number" value={shippingCost || ""} onChange={(e) => setShippingCost(parseFloat(e.target.value) || 0)}
+                className="w-32 px-2 py-1 border border-gray-300 rounded text-sm text-right" placeholder="0.00" />
+            </div>
             <div className="flex justify-between text-lg border-t pt-2">
-              <span className="font-semibold">ยอดรวมสุทธิ</span>
-              <span className="font-bold text-blue-600">฿{Math.round(total).toLocaleString()}</span>
+              <span className="font-bold">ยอดชำระเงิน</span>
+              <span className="font-bold text-blue-600">฿{paymentTotal.toLocaleString("th-TH", { minimumFractionDigits: 2 })}</span>
             </div>
           </div>
         </div>

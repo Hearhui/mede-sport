@@ -63,17 +63,22 @@ export async function POST(req: NextRequest) {
     (s: number, i: any) => s + (i.unitPrice || 0) * (i.quantity || 0),
     0
   );
+  const discount = body.discount || 0;
+  const deposit = body.deposit || 0;
+  const shippingCost = body.shippingCost || 0;
+  const balanceAfterDiscount = subtotal - discount;
   const vatRate = body.vatRate ?? 7;
   let vatAmount = 0;
-  let total = subtotal;
+  let total = balanceAfterDiscount;
 
   if (body.vatType === "EX_VAT") {
-    vatAmount = subtotal * (vatRate / 100);
-    total = subtotal + vatAmount;
+    vatAmount = balanceAfterDiscount * (vatRate / 100);
+    total = balanceAfterDiscount + vatAmount;
   } else if (body.vatType === "IN_VAT") {
-    vatAmount = subtotal - subtotal / (1 + vatRate / 100);
-    total = subtotal;
+    vatAmount = balanceAfterDiscount - balanceAfterDiscount / (1 + vatRate / 100);
+    total = balanceAfterDiscount;
   }
+  total = total + shippingCost;
 
   const document = await prisma.document.create({
     data: {
@@ -86,6 +91,9 @@ export async function POST(req: NextRequest) {
       vatType: body.vatType || "IN_VAT",
       vatRate,
       subtotal,
+      discount,
+      deposit,
+      shippingCost,
       vatAmount,
       total,
       showImages: body.showImages || false,

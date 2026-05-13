@@ -42,6 +42,7 @@ export async function PUT(req: NextRequest) {
     docSignerRight: body.docSignerRight || null,
     docNoteDefault: body.docNoteDefault || null,
     docBankInfo: body.docBankInfo || null,
+    docConditions: body.docConditions || null,
   };
 
   let company;
