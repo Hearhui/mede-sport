@@ -118,7 +118,10 @@ export default async function PrintDocumentPage({
               <h2 className="text-xl font-bold text-blue-600">{typeInfo.th}</h2>
               <p className="text-xs text-gray-500">{typeInfo.en}</p>
               {doc.documentType === "INVOICE" && (
-                <p className="text-xs text-gray-500 mt-1">ต้นฉบับ / ORIGINAL</p>
+                <>
+                  <p className="text-xs text-gray-500 mt-1">ต้นฉบับ / ORIGINAL</p>
+                  <p className="text-xs text-gray-400">(เอกสารออกเป็นชุด)</p>
+                </>
               )}
             </div>
           </div>
@@ -279,24 +282,45 @@ export default async function PrintDocumentPage({
             </div>
           </div>
 
-          {/* Notes */}
-          {doc.notes && (
-            <div className="mt-4 text-xs text-gray-600">
-              <p className="font-medium">หมายเหตุ: {doc.notes}</p>
+          {/* Bank Info */}
+          {company?.docBankInfo && (
+            <div className="mt-4 text-xs text-gray-600 border border-gray-200 rounded-lg p-3">
+              <p className="font-medium text-gray-700 mb-1">ข้อมูลการชำระเงิน / Payment Information</p>
+              <p className="whitespace-pre-line">{company.docBankInfo}</p>
             </div>
           )}
 
-          {/* Signature */}
-          <div className="grid grid-cols-2 gap-16 mt-12">
+          {/* Notes */}
+          {(doc.notes || company?.docNoteDefault) && (
+            <div className="mt-4 text-xs text-gray-600">
+              <p className="font-medium">หมายเหตุ: {doc.notes || company?.docNoteDefault}</p>
+            </div>
+          )}
+
+          {/* Footer Text */}
+          {company?.docFooterText && (
+            <div className="mt-2 text-xs text-gray-500">
+              <p>{company.docFooterText}</p>
+            </div>
+          )}
+
+          {/* Signature - 3 columns */}
+          <div className="grid grid-cols-3 gap-8 mt-12">
             <div className="text-center">
               <div className="border-b border-gray-400 mb-2 h-12"></div>
-              <p className="text-xs text-gray-600">ผู้ออกเอกสาร / Authorized</p>
-              <p className="text-xs text-gray-500 mt-1">บริษัท มีดี สปอร์ต จำกัด</p>
+              <p className="text-xs text-gray-600">{company?.docSignerLeft || "ผู้ออกเอกสาร / Authorized"}</p>
+              <p className="text-xs text-gray-500 mt-1">{company?.name || "บริษัท มีดี สปอร์ต จำกัด"}</p>
               <p className="text-xs text-gray-400">วันที่ ....../....../......</p>
             </div>
             <div className="text-center">
               <div className="border-b border-gray-400 mb-2 h-12"></div>
-              <p className="text-xs text-gray-600">ผู้รับ / Received by</p>
+              <p className="text-xs text-gray-600">{company?.docSignerCenter || "ผู้อนุมัติ / Approved"}</p>
+              <p className="text-xs text-gray-500 mt-1">{company?.name || "บริษัท มีดี สปอร์ต จำกัด"}</p>
+              <p className="text-xs text-gray-400">วันที่ ....../....../......</p>
+            </div>
+            <div className="text-center">
+              <div className="border-b border-gray-400 mb-2 h-12"></div>
+              <p className="text-xs text-gray-600">{company?.docSignerRight || "ผู้รับสินค้า / Received by"}</p>
               <p className="text-xs text-gray-500 mt-1">{doc.customer.name}</p>
               <p className="text-xs text-gray-400">วันที่ ....../....../......</p>
             </div>

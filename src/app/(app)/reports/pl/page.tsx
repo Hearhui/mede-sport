@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import PrintButton from "@/components/PrintButton";
 
 export default async function PLReportPage({
   searchParams,
@@ -75,9 +76,7 @@ export default async function PLReportPage({
           <h1 className="text-2xl font-bold text-gray-900">รายงานกำไร-ขาดทุน (P&L)</h1>
           <p className="text-gray-500 mt-1">ปี {year} | เดือน {months[fromMonth - 1]} - {months[toMonth - 1]}</p>
         </div>
-        <button onClick={() => window.print()} className="bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-medium print:hidden">
-          พิมพ์ / PDF
-        </button>
+        <PrintButton />
       </div>
 
       {/* Date Range Filter */}

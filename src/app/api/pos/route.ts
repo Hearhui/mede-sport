@@ -61,6 +61,10 @@ export async function POST(req: NextRequest) {
       data: {
         transactionNo,
         customerId: body.customerId || null,
+        customerName: body.customerName || null,
+        customerCompany: body.customerCompany || null,
+        customerAddress: body.customerAddress || null,
+        customerTaxId: body.customerTaxId || null,
         subtotal,
         discount,
         vatAmount: Math.round(vatAmount * 100) / 100,

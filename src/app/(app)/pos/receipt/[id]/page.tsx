@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
+import PrintButton from "@/components/PrintButton";
 
 export default async function PosReceiptPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -15,10 +16,7 @@ export default async function PosReceiptPage({ params }: { params: Promise<{ id:
     <>
       {/* Print button */}
       <div className="max-w-[80mm] mx-auto mb-4 print:hidden">
-        <button onClick={() => window.print()}
-          className="w-full bg-blue-600 text-white py-2 rounded-lg text-sm font-medium">
-          พิมพ์ใบเสร็จ / PDF
-        </button>
+        <PrintButton />
       </div>
 
       {/* Receipt - 80mm thermal receipt style */}
@@ -52,10 +50,32 @@ export default async function PosReceiptPage({ params }: { params: Promise<{ id:
             <span className="text-gray-500">วันที่:</span>
             <span>{tx.createdAt.toLocaleString("th-TH")}</span>
           </div>
-          {tx.customer && (
-            <div className="flex justify-between">
-              <span className="text-gray-500">ลูกค้า:</span>
-              <span>{tx.customer.name}</span>
+          {(tx.customer || tx.customerName || tx.customerCompany) && (
+            <div className="border-t border-dashed border-gray-300 pt-1 mt-1 space-y-0.5">
+              {(tx.customerCompany || tx.customer?.name) && (
+                <div>
+                  <span className="text-gray-500">ลูกค้า: </span>
+                  <span className="font-bold">{tx.customerCompany || tx.customer?.name}</span>
+                </div>
+              )}
+              {tx.customerName && (
+                <div>
+                  <span className="text-gray-500">ชื่อ: </span>
+                  <span>{tx.customerName}</span>
+                </div>
+              )}
+              {tx.customerAddress && (
+                <div>
+                  <span className="text-gray-500">ที่อยู่: </span>
+                  <span>{tx.customerAddress}</span>
+                </div>
+              )}
+              {(tx.customerTaxId || tx.customer?.taxId) && (
+                <div>
+                  <span className="text-gray-500">Tax ID: </span>
+                  <span>{tx.customerTaxId || tx.customer?.taxId}</span>
+                </div>
+              )}
             </div>
           )}
           <div className="flex justify-between">

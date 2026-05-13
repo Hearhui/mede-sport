@@ -21,6 +21,11 @@ export default function PosPage() {
   const [showReceipt, setShowReceipt] = useState(false);
   const [lastReceipt, setLastReceipt] = useState<any>(null);
   const [processing, setProcessing] = useState(false);
+  const [showCustomer, setShowCustomer] = useState(false);
+  const [customerName, setCustomerName] = useState("");
+  const [customerCompany, setCustomerCompany] = useState("");
+  const [customerAddress, setCustomerAddress] = useState("");
+  const [customerTaxId, setCustomerTaxId] = useState("");
   const searchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -96,6 +101,10 @@ export default function PosPage() {
           discount,
           paymentMethod,
           cashReceived: paymentMethod === "CASH" ? cashReceived : total,
+          customerName: customerName || null,
+          customerCompany: customerCompany || null,
+          customerAddress: customerAddress || null,
+          customerTaxId: customerTaxId || null,
         }),
       });
 
@@ -110,6 +119,11 @@ export default function PosPage() {
       setCart([]);
       setDiscount(0);
       setCashReceived(0);
+      setShowCustomer(false);
+      setCustomerName("");
+      setCustomerCompany("");
+      setCustomerAddress("");
+      setCustomerTaxId("");
     } finally {
       setProcessing(false);
     }
@@ -281,6 +295,44 @@ export default function PosPage() {
                 <span className="font-bold text-blue-600">฿{total.toLocaleString()}</span>
               </div>
             </div>
+          </div>
+
+          {/* Customer Info (optional) */}
+          <div className="mt-4">
+            <button
+              type="button"
+              onClick={() => setShowCustomer(!showCustomer)}
+              className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
+            >
+              <svg className={`w-4 h-4 transition-transform ${showCustomer ? "rotate-90" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+              {showCustomer ? "ซ่อนข้อมูลลูกค้า" : "ใส่ข้อมูลลูกค้า (ออกบิลเต็มรูปแบบ)"}
+            </button>
+            {showCustomer && (
+              <div className="mt-2 space-y-2 bg-blue-50 rounded-lg p-3">
+                <div>
+                  <label className="text-xs text-gray-500">ชื่อ-นามสกุล</label>
+                  <input type="text" value={customerName} onChange={(e) => setCustomerName(e.target.value)}
+                    className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm mt-0.5" placeholder="ชื่อ นามสกุล" />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500">บริษัท / ร้าน</label>
+                  <input type="text" value={customerCompany} onChange={(e) => setCustomerCompany(e.target.value)}
+                    className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm mt-0.5" placeholder="ชื่อบริษัท/ร้าน (ถ้ามี)" />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500">ที่อยู่</label>
+                  <textarea value={customerAddress} onChange={(e) => setCustomerAddress(e.target.value)}
+                    className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm mt-0.5" rows={2} placeholder="ที่อยู่สำหรับออกบิล" />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500">เลขผู้เสียภาษี</label>
+                  <input type="text" value={customerTaxId} onChange={(e) => setCustomerTaxId(e.target.value)}
+                    className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm mt-0.5" placeholder="เลขประจำตัวผู้เสียภาษี 13 หลัก" maxLength={13} />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Payment */}

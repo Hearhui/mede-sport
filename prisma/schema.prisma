@@ -43,6 +43,13 @@ model CompanyInfo {
   phone     String?
   fax       String?
   logoUrl   String?  @map("logo_url")
+  // Document settings (ข้อความในเอกสาร)
+  docFooterText   String? @map("doc_footer_text")     // ข้อความท้ายเอกสาร
+  docSignerLeft   String? @map("doc_signer_left")     // ลายเซ็นซ้าย (ผู้ออกเอกสาร)
+  docSignerCenter String? @map("doc_signer_center")   // ลายเซ็นกลาง (ผู้อนุมัติ)
+  docSignerRight  String? @map("doc_signer_right")    // ลายเซ็นขวา (ผู้รับ)
+  docNoteDefault  String? @map("doc_note_default")    // หมายเหตุเริ่มต้น
+  docBankInfo     String? @map("doc_bank_info")       // ข้อมูลบัญชีธนาคาร
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -409,6 +416,10 @@ model PosTransaction {
   transactionNo   String   @unique @map("transaction_no")
   date            DateTime @default(now())
   customerId      Int?     @map("customer_id")
+  customerName    String?  @map("customer_name")
+  customerCompany String?  @map("customer_company")
+  customerAddress String?  @map("customer_address")
+  customerTaxId   String?  @map("customer_tax_id")
   subtotal        Decimal  @default(0) @db.Decimal(12, 2)
   discount        Decimal  @default(0) @db.Decimal(12, 2)
   vatAmount       Decimal  @default(0) @map("vat_amount") @db.Decimal(12, 2)
