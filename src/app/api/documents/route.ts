@@ -35,7 +35,10 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  try {
   const body = await req.json();
+
+  if (!body.customerId) return NextResponse.json({ error: "กรุณาเลือกลูกค้า" }, { status: 400 });
 
   // Generate document number
   const prefix = body.documentType === "QUOTATION" ? "QT" :
@@ -105,4 +108,7 @@ export async function POST(req: NextRequest) {
   });
 
   return NextResponse.json(document, { status: 201 });
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message || "เกิดข้อผิดพลาด" }, { status: 500 });
+  }
 }

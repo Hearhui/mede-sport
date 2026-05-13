@@ -71,7 +71,11 @@ export default async function CatalogDetailPage({ params }: { params: Promise<{ 
               <div className="absolute bottom-16 left-0 right-0 text-center">
                 <div className="inline-flex items-center gap-6 text-sm text-blue-200">
                   <span>{catalog.items.length} รายการ</span>
-                  {catalog.validUntil && <span>ใช้ได้ถึง {catalog.validUntil.toLocaleDateString("th-TH")}</span>}
+                  <span>
+                    {catalog.validUntil
+                      ? `ราคาใช้ได้ถึง ${catalog.validUntil.toLocaleDateString("th-TH")}`
+                      : "ราคาใช้ได้ไม่เกิน 1 เดือนหลังจากวันที่สร้าง"}
+                  </span>
                 </div>
                 <div className="mt-3 text-xs text-blue-300 space-y-0.5">
                   <p>{company?.address1} {company?.subdistrict} {company?.district} {company?.province}</p>
@@ -182,11 +186,16 @@ export default async function CatalogDetailPage({ params }: { params: Promise<{ 
               </div>
 
               {/* Valid until */}
-              {catalog.validUntil && (
-                <div className="mt-8 text-sm text-gray-500">
-                  ราคานี้ใช้ได้ถึง {catalog.validUntil.toLocaleDateString("th-TH", { year: "numeric", month: "long", day: "numeric" })}
-                </div>
-              )}
+              <div className="mt-8 text-sm text-gray-500">
+                {catalog.validUntil ? (
+                  <p>ราคานี้ใช้ได้ถึง {catalog.validUntil.toLocaleDateString("th-TH", { year: "numeric", month: "long", day: "numeric" })}</p>
+                ) : (
+                  <p>ราคาใช้ได้ไม่เกิน 1 เดือนหลังจากวันที่สร้าง</p>
+                )}
+                <p className="text-xs text-gray-600 mt-1">
+                  วันที่สร้าง: {catalog.createdAt.toLocaleDateString("th-TH", { year: "numeric", month: "long", day: "numeric" })}
+                </p>
+              </div>
             </div>
           </div>
         </div>

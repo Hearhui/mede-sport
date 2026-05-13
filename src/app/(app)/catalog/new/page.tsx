@@ -35,7 +35,11 @@ export default function NewCatalogPage() {
   const [coverSubtitle, setCoverSubtitle] = useState("");
   const [introText, setIntroText] = useState("เราขอนำเสนอสินค้าคุณภาพในราคาที่ดีที่สุดสำหรับท่าน ด้วยประสบการณ์และความเชี่ยวชาญ เรามั่นใจว่าสินค้าทุกชิ้นจะตอบโจทย์ความต้องการของท่านได้อย่างครบถ้วน");
   const [closingText, setClosingText] = useState("หากท่านสนใจหรือต้องการข้อมูลเพิ่มเติม กรุณาติดต่อเราได้ทุกช่องทาง เรายินดีให้บริการเสมอ");
-  const [validUntil, setValidUntil] = useState("");
+  const [validUntil, setValidUntil] = useState(() => {
+    const d = new Date();
+    d.setMonth(d.getMonth() + 1);
+    return d.toISOString().slice(0, 10);
+  });
 
   // Products + selection
   const [products, setProducts] = useState<Product[]>([]);

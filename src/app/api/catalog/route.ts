@@ -13,7 +13,9 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  try {
   const body = await req.json();
+  if (!body.name) return NextResponse.json({ error: "กรุณาใส่ชื่อแคตตาล็อค" }, { status: 400 });
   const catalog = await prisma.catalog.create({
     data: {
       name: body.name,
@@ -38,4 +40,7 @@ export async function POST(req: NextRequest) {
     include: { items: { include: { product: true } } },
   });
   return NextResponse.json(catalog, { status: 201 });
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message || "เกิดข้อผิดพลาด" }, { status: 500 });
+  }
 }
