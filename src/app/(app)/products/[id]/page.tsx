@@ -82,7 +82,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 </div>
               </div>
             )}
-            <ProductImageManager productId={product.id} images={product.images} />
+            <ProductImageManager productId={product.id} productName={product.name} images={product.images} />
           </div>
         </div>
 

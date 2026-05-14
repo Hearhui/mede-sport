@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 
 export default function ProductImageManager({
   productId,
+  productName,
   images,
 }: {
   productId: number;
+  productName?: string;
   images: { id: number; imageUrl: string; isPrimary: boolean }[];
 }) {
   const router = useRouter();
@@ -15,6 +17,26 @@ export default function ProductImageManager({
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [url, setUrl] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState(productName || "");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searching, setSearching] = useState(false);
+
+  async function searchImages() {
+    if (!searchQuery.trim()) return;
+    setSearching(true);
+    const res = await fetch(`/api/pexels?q=${encodeURIComponent(searchQuery)}`);
+    const data = await res.json();
+    setSearchResults(data.photos || []);
+    setSearching(false);
+  }
+
+  async function selectImage(img: any) {
+    setUploading(true);
+    await saveImage(img.url);
+    setSearchOpen(false);
+    setUploading(false);
+  }
 
   async function uploadFile(file: File) {
     setUploading(true);
@@ -114,7 +136,7 @@ export default function ProductImageManager({
         )}
       </div>
 
-      {/* URL input */}
+      {/* URL input + Search button */}
       <div className="flex gap-2">
         <input type="url" value={url} onChange={(e) => setUrl(e.target.value)}
           placeholder="หรือวาง URL รูปภาพ..."
@@ -124,6 +146,50 @@ export default function ProductImageManager({
           เพิ่ม
         </button>
       </div>
+
+      {/* Search Image Button */}
+      <button onClick={() => { setSearchOpen(!searchOpen); if (!searchOpen && searchQuery) searchImages(); }}
+        className="w-full py-2 bg-purple-50 text-purple-700 rounded-lg text-xs font-medium hover:bg-purple-100 border border-purple-200 transition flex items-center justify-center gap-1.5">
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        ค้นหารูปสินค้า (Pexels)
+      </button>
+
+      {/* Search Panel */}
+      {searchOpen && (
+        <div className="border border-purple-200 rounded-xl p-3 bg-purple-50/50 space-y-3">
+          <div className="flex gap-2">
+            <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && searchImages()}
+              placeholder="พิมพ์ชื่อสินค้า เช่น football, badminton racket..."
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-xs" />
+            <button onClick={searchImages} disabled={searching}
+              className="px-4 py-2 bg-purple-600 text-white rounded-lg text-xs font-medium hover:bg-purple-700 disabled:opacity-50 shrink-0">
+              {searching ? "กำลังหา..." : "ค้นหา"}
+            </button>
+          </div>
+
+          {searchResults.length > 0 && (
+            <div className="grid grid-cols-4 gap-2">
+              {searchResults.map((photo: any) => (
+                <button key={photo.id} onClick={() => selectImage(photo)} disabled={uploading}
+                  className="relative group rounded-lg overflow-hidden border-2 border-transparent hover:border-purple-500 transition disabled:opacity-50">
+                  <img src={photo.small || photo.url} alt={photo.alt} className="w-full aspect-square object-cover" />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition flex items-center justify-center">
+                    <span className="text-white text-xs font-medium opacity-0 group-hover:opacity-100">เลือก</span>
+                  </div>
+                  <p className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[8px] px-1 py-0.5 truncate">{photo.photographer}</p>
+                </button>
+              ))}
+            </div>
+          )}
+          {searchResults.length === 0 && !searching && searchQuery && (
+            <p className="text-xs text-center text-gray-400">ไม่พบรูป ลองค้นหาเป็นภาษาอังกฤษ เช่น football, badminton</p>
+          )}
+          {searching && <p className="text-xs text-center text-purple-600">กำลังค้นหา...</p>}
+        </div>
+      )}
     </div>
   );
 }
