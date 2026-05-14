@@ -22,6 +22,11 @@ export default function DocumentForm({
   const [saving, setSaving] = useState(false);
   const [customerId, setCustomerId] = useState<number | "">("");
   const [customerSearch, setCustomerSearch] = useState("");
+  const [showNewCustomer, setShowNewCustomer] = useState(false);
+  const [newCustName, setNewCustName] = useState("");
+  const [newCustPhone, setNewCustPhone] = useState("");
+  const [newCustAddress, setNewCustAddress] = useState("");
+  const [creatingCustomer, setCreatingCustomer] = useState(false);
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [paymentTerm, setPaymentTerm] = useState("Cash");
   const [vatType, setVatType] = useState("IN_VAT");
@@ -96,6 +101,28 @@ export default function DocumentForm({
   const netBeforeVat = balanceAfterDiscount - vatAmount;
   const grandTotal = total + shippingCost;
   const paymentTotal = grandTotal - deposit;
+
+  async function createNewCustomer() {
+    if (!newCustName.trim()) return;
+    setCreatingCustomer(true);
+    try {
+      const res = await fetch("/api/customers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newCustName, phone: newCustPhone, addressLine1: newCustAddress }),
+      });
+      if (res.ok) {
+        const cust = await res.json();
+        customers.push({ id: cust.id, customerCode: cust.customerCode, name: cust.name });
+        setCustomerId(cust.id);
+        setCustomerSearch(cust.name);
+        setShowNewCustomer(false);
+        setNewCustName(""); setNewCustPhone(""); setNewCustAddress("");
+      }
+    } finally {
+      setCreatingCustomer(false);
+    }
+  }
 
   const filteredCustomers = customerSearch
     ? customers.filter(
@@ -188,7 +215,38 @@ export default function DocumentForm({
         {customerId && (
           <p className="text-green-600 text-sm mt-2">
             เลือกแล้ว: {customers.find((c) => c.id === customerId)?.name}
+            <button type="button" onClick={() => { setCustomerId(""); setCustomerSearch(""); }} className="text-gray-400 hover:text-red-500 ml-2 text-xs">เปลี่ยน</button>
           </p>
+        )}
+
+        {/* Add new customer */}
+        {!customerId && (
+          <div className="mt-3">
+            {!showNewCustomer ? (
+              <button type="button" onClick={() => setShowNewCustomer(true)}
+                className="text-sm text-blue-600 hover:text-blue-800 font-medium">+ เพิ่มลูกค้าใหม่</button>
+            ) : (
+              <div className="border border-blue-200 rounded-lg p-4 bg-blue-50 space-y-3">
+                <p className="text-sm font-medium text-blue-800">ลูกค้าใหม่</p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <input type="text" value={newCustName} onChange={e => setNewCustName(e.target.value)}
+                    placeholder="ชื่อลูกค้า *" className="px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                  <input type="text" value={newCustPhone} onChange={e => setNewCustPhone(e.target.value)}
+                    placeholder="เบอร์โทร" className="px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                  <input type="text" value={newCustAddress} onChange={e => setNewCustAddress(e.target.value)}
+                    placeholder="ที่อยู่" className="px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                </div>
+                <div className="flex gap-2">
+                  <button type="button" onClick={createNewCustomer} disabled={!newCustName.trim() || creatingCustomer}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50">
+                    {creatingCustomer ? "กำลังสร้าง..." : "สร้างลูกค้า"}
+                  </button>
+                  <button type="button" onClick={() => setShowNewCustomer(false)}
+                    className="px-4 py-2 text-gray-500 text-sm">ยกเลิก</button>
+                </div>
+              </div>
+            )}
+          </div>
         )}
       </div>
 

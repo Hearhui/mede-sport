@@ -26,16 +26,62 @@ export default function BulkUploadPage() {
     fetch("/api/products?limit=2000").then(r => r.json()).then(d => setProducts(d.products || []));
   }, []);
 
+  function autoMatch(fileName: string): Product | null {
+    // Remove extension: "Molten F5N1000.jpg" → "Molten F5N1000"
+    const name = fileName.replace(/\.[^.]+$/, "").replace(/[_-]/g, " ").trim().toLowerCase();
+    if (!name) return null;
+
+    // Try exact match on productCode first
+    let match = products.find(p => p.productCode.toLowerCase() === name);
+    if (match) return match;
+
+    // Try filename contains productCode or vice versa
+    match = products.find(p => name.includes(p.productCode.toLowerCase()));
+    if (match) return match;
+
+    // Try filename matches product name (partial)
+    const words = name.split(/\s+/).filter(w => w.length >= 3);
+    if (words.length > 0) {
+      // Score each product by how many words match
+      let bestScore = 0;
+      let bestProduct: Product | null = null;
+      for (const p of products) {
+        const pName = p.name.toLowerCase();
+        const pBrand = (p.brand || "").toLowerCase();
+        let score = 0;
+        for (const w of words) {
+          if (pName.includes(w)) score += 2;
+          if (pBrand.includes(w)) score += 1;
+        }
+        if (score > bestScore && score >= 2) {
+          bestScore = score;
+          bestProduct = p;
+        }
+      }
+      if (bestProduct) return bestProduct;
+    }
+    return null;
+  }
+
   function addFiles(newFiles: FileList | File[]) {
     const items: FileItem[] = Array.from(newFiles)
       .filter(f => f.type.startsWith("image/"))
-      .map(f => ({
-        file: f,
-        preview: URL.createObjectURL(f),
-        productId: null,
-        productName: "",
-        status: "pending" as const,
-      }));
+      .map(f => {
+        const matched = autoMatch(f.name);
+        return {
+          file: f,
+          preview: URL.createObjectURL(f),
+          productId: matched?.id || null,
+          productName: matched?.name || "",
+          status: "pending" as const,
+        };
+      });
+
+    const matchedCount = items.filter(i => i.productId).length;
+    if (matchedCount > 0) {
+      alert(`จับคู่อัตโนมัติได้ ${matchedCount}/${items.length} รูป! ตรวจสอบแล้วกด Upload`);
+    }
+
     setFiles(prev => [...prev, ...items]);
   }
 
