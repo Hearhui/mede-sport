@@ -19,15 +19,18 @@ const typeLabels: Record<string, string> = {
 export default function ConvertForm({
   sourceDocument,
   targetType,
+  customerMissingFields = [],
 }: {
   sourceDocument: any;
   targetType: string;
+  customerMissingFields?: string[];
 }) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [paymentTerm, setPaymentTerm] = useState(sourceDocument.paymentTerm || "Cash");
   const [vatType, setVatType] = useState(sourceDocument.vatType);
   const [showImages, setShowImages] = useState(sourceDocument.showImages);
+  const [showSignature, setShowSignature] = useState(sourceDocument.showSignature ?? true);
   const [notes, setNotes] = useState("");
   const [items, setItems] = useState<Item[]>(
     sourceDocument.items.map((i: any) => ({
@@ -89,6 +92,10 @@ export default function ConvertForm({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (customerMissingFields.length > 0) {
+      alert(`กรุณาเพิ่มข้อมูลลูกค้าให้ครบก่อน: ${customerMissingFields.join(", ")}`);
+      return;
+    }
     const validItems = items.filter((i) => i.description);
     if (validItems.length === 0) { alert("กรุณาเพิ่มรายการอย่างน้อย 1 รายการ"); return; }
 
@@ -103,6 +110,7 @@ export default function ConvertForm({
           paymentTerm,
           vatType,
           showImages,
+          showSignature,
           notes,
         }),
       });
@@ -152,10 +160,14 @@ export default function ConvertForm({
               <option value="NO_VAT">ไม่มี VAT</option>
             </select>
           </div>
-          <div className="flex items-end">
+          <div className="flex items-end gap-4">
             <label className="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" checked={showImages} onChange={(e) => setShowImages(e.target.checked)} className="rounded" />
               <span className="text-sm text-gray-600">แสดงรูปสินค้า</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked={showSignature} onChange={(e) => setShowSignature(e.target.checked)} className="rounded" />
+              <span className="text-sm text-gray-600">แสดงลายเซ็น</span>
             </label>
           </div>
         </div>
@@ -234,9 +246,9 @@ export default function ConvertForm({
       </div>
 
       <div className="flex gap-4">
-        <button type="submit" disabled={saving}
+        <button type="submit" disabled={saving || customerMissingFields.length > 0}
           className="bg-green-600 text-white px-8 py-3 rounded-xl hover:bg-green-700 font-medium disabled:opacity-50 shadow-sm">
-          {saving ? "กำลังบันทึก..." : `บันทึก${typeLabels[targetType]}`}
+          {customerMissingFields.length > 0 ? "ข้อมูลลูกค้าไม่ครบ" : saving ? "กำลังบันทึก..." : `บันทึก${typeLabels[targetType]}`}
         </button>
         <button type="button" onClick={() => router.back()}
           className="px-8 py-3 rounded-xl border border-gray-300 text-gray-600 hover:bg-gray-50">ยกเลิก</button>

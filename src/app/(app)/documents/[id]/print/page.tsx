@@ -190,7 +190,13 @@ export default async function PrintDocumentPage({
               {document.dueDate && (
                 <tr className="border-b border-gray-100">
                   <td className="py-1.5 text-gray-500">ครบกำหนด / Due Date</td>
-                  <td className="py-1.5">{document.dueDate.toLocaleDateString("th-TH")}</td>
+                  <td className="py-1.5 font-medium text-red-600">{document.dueDate.toLocaleDateString("th-TH", { year: "numeric", month: "long", day: "numeric" })}</td>
+                </tr>
+              )}
+              {document.customer.creditTermDays > 0 && (
+                <tr className="border-b border-gray-100">
+                  <td className="py-1.5 text-gray-500">เครดิต / Credit</td>
+                  <td className="py-1.5">{document.customer.creditTermDays} วัน</td>
                 </tr>
               )}
               {document.referenceNo && (
@@ -269,16 +275,10 @@ export default async function PrintDocumentPage({
   function renderFooter() {
     return (
       <>
-        {/* Totals + Thai Text */}
-        <div className="flex gap-6">
-          {/* Thai amount text */}
-          <div className="flex-1 border border-gray-300 rounded-lg p-3">
-            <p className="text-xs text-gray-500 mb-1">จำนวนเงิน (ตัวอักษร)</p>
-            <p className="font-bold text-gray-900">{numberToThaiText(paymentTotal)}</p>
-          </div>
-
+        {/* Totals table */}
+        <div className="flex gap-6 items-end">
           {/* Totals - matching Excel format */}
-          <div className="w-72">
+          <div className="flex-1">
             <table className="w-full text-sm">
               <tbody>
                 <tr className="border-b border-gray-200">
@@ -328,6 +328,14 @@ export default async function PrintDocumentPage({
           </div>
         </div>
 
+        {/* Thai amount text - aligned with totals */}
+        <div className="mt-3 border border-gray-300 rounded-lg p-3">
+          <div className="flex items-center gap-2">
+            <p className="text-xs text-gray-500 shrink-0">จำนวนเงิน (ตัวอักษร)</p>
+            <p className="font-bold text-gray-900 text-sm">{numberToThaiText(paymentTotal)}</p>
+          </div>
+        </div>
+
         {/* Bank Info */}
         {company?.docBankInfo && (
           <div className="mt-4 text-xs text-gray-600 border border-gray-200 rounded-lg p-3">
@@ -358,27 +366,37 @@ export default async function PrintDocumentPage({
           </div>
         )}
 
-        {/* Signature - 3 columns */}
-        <div className="grid grid-cols-3 gap-8 mt-12">
-          <div className="text-center">
-            <div className="border-b border-gray-400 mb-2 h-12"></div>
-            <p className="text-xs text-gray-600">{company?.docSignerLeft || "ผู้ออกเอกสาร / Authorized"}</p>
-            <p className="text-xs text-gray-500 mt-1">{company?.name || "บริษัท มีดี สปอร์ต จำกัด"}</p>
-            <p className="text-xs text-gray-400">วันที่ ....../....../......</p>
-          </div>
-          <div className="text-center">
-            <div className="border-b border-gray-400 mb-2 h-12"></div>
-            <p className="text-xs text-gray-600">{company?.docSignerCenter || "ผู้อนุมัติ / Approved"}</p>
-            <p className="text-xs text-gray-500 mt-1">{company?.name || "บริษัท มีดี สปอร์ต จำกัด"}</p>
-            <p className="text-xs text-gray-400">วันที่ ....../....../......</p>
-          </div>
-          <div className="text-center">
-            <div className="border-b border-gray-400 mb-2 h-12"></div>
-            <p className="text-xs text-gray-600">{company?.docSignerRight || "ผู้รับสินค้า / Received by"}</p>
-            <p className="text-xs text-gray-500 mt-1">{document.customer.name}</p>
-            <p className="text-xs text-gray-400">วันที่ ....../....../......</p>
-          </div>
-        </div>
+        {/* Signature - 3 columns (conditional) */}
+        {document.showSignature && (() => {
+          // Get per-type signer names, fallback to default
+          const docSigners = company?.docSigners as Record<string, { left?: string; center?: string; right?: string }> | null;
+          const typeSigner = docSigners?.[document.documentType];
+          const signerLeft = typeSigner?.left || company?.docSignerLeft || "ผู้ออกเอกสาร / Authorized";
+          const signerCenter = typeSigner?.center || company?.docSignerCenter || "ผู้อนุมัติ / Approved";
+          const signerRight = typeSigner?.right || company?.docSignerRight || "ผู้รับสินค้า / Received by";
+          return (
+            <div className="grid grid-cols-3 gap-8 mt-12">
+              <div className="text-center">
+                <div className="border-b border-gray-400 mb-2 h-12"></div>
+                <p className="text-xs text-gray-600">{signerLeft}</p>
+                <p className="text-xs text-gray-500 mt-1">{company?.name || "บริษัท มีดี สปอร์ต จำกัด"}</p>
+                <p className="text-xs text-gray-400">วันที่ ....../....../......</p>
+              </div>
+              <div className="text-center">
+                <div className="border-b border-gray-400 mb-2 h-12"></div>
+                <p className="text-xs text-gray-600">{signerCenter}</p>
+                <p className="text-xs text-gray-500 mt-1">{company?.name || "บริษัท มีดี สปอร์ต จำกัด"}</p>
+                <p className="text-xs text-gray-400">วันที่ ....../....../......</p>
+              </div>
+              <div className="text-center">
+                <div className="border-b border-gray-400 mb-2 h-12"></div>
+                <p className="text-xs text-gray-600">{signerRight}</p>
+                <p className="text-xs text-gray-500 mt-1">{document.customer.name}</p>
+                <p className="text-xs text-gray-400">วันที่ ....../....../......</p>
+              </div>
+            </div>
+          );
+        })()}
       </>
     );
   }

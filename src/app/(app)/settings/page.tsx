@@ -170,12 +170,46 @@ export default function SettingsPage() {
         <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-6">
           <h2 className="text-lg font-bold text-gray-900 border-b pb-3">ข้อความในเอกสาร</h2>
 
-          <h3 className="text-sm font-semibold text-gray-700">ลายเซ็น (3 ช่อง)</h3>
+          <h3 className="text-sm font-semibold text-gray-700">ลายเซ็นเริ่มต้น (3 ช่อง)</h3>
+          <p className="text-xs text-gray-400">ใช้กรณีไม่ได้ตั้งค่าแยกตามประเภทเอกสารด้านล่าง</p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Field label="ลายเซ็นซ้าย" value={data.docSignerLeft} onChange={(v) => setData({ ...data, docSignerLeft: v })} placeholder="ผู้ออกเอกสาร / Authorized" />
             <Field label="ลายเซ็นกลาง" value={data.docSignerCenter} onChange={(v) => setData({ ...data, docSignerCenter: v })} placeholder="ผู้อนุมัติ / Approved" />
             <Field label="ลายเซ็นขวา" value={data.docSignerRight} onChange={(v) => setData({ ...data, docSignerRight: v })} placeholder="ผู้รับสินค้า / Received by" />
           </div>
+
+          <h3 className="text-sm font-semibold text-gray-700 pt-2">ลายเซ็นแยกตามประเภทเอกสาร</h3>
+          <p className="text-xs text-gray-400">ถ้าไม่กรอก จะใช้ค่าเริ่มต้นด้านบน</p>
+          {[
+            { key: "QUOTATION", label: "ใบเสนอราคา" },
+            { key: "PURCHASE_ORDER", label: "ใบสั่งซื้อ" },
+            { key: "INVOICE", label: "ใบกำกับภาษี" },
+            { key: "RECEIPT", label: "ใบเสร็จรับเงิน" },
+            { key: "DELIVERY_NOTE", label: "ใบส่งสินค้า" },
+            { key: "CREDIT_NOTE", label: "ใบลดหนี้" },
+          ].map((docType) => {
+            const signers = data.docSigners || {};
+            const typeSigner = signers[docType.key] || {};
+            return (
+              <div key={docType.key} className="border border-gray-100 rounded-lg p-4">
+                <p className="text-sm font-medium text-gray-700 mb-3">{docType.label}</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <Field label="ซ้าย" value={typeSigner.left || ""} onChange={(v) => {
+                    const updated = { ...signers, [docType.key]: { ...typeSigner, left: v } };
+                    setData({ ...data, docSigners: updated });
+                  }} placeholder={data.docSignerLeft || "ผู้ออกเอกสาร"} />
+                  <Field label="กลาง" value={typeSigner.center || ""} onChange={(v) => {
+                    const updated = { ...signers, [docType.key]: { ...typeSigner, center: v } };
+                    setData({ ...data, docSigners: updated });
+                  }} placeholder={data.docSignerCenter || "ผู้อนุมัติ"} />
+                  <Field label="ขวา" value={typeSigner.right || ""} onChange={(v) => {
+                    const updated = { ...signers, [docType.key]: { ...typeSigner, right: v } };
+                    setData({ ...data, docSigners: updated });
+                  }} placeholder={data.docSignerRight || "ผู้รับสินค้า"} />
+                </div>
+              </div>
+            );
+          })}
 
           <h3 className="text-sm font-semibold text-gray-700 pt-2">ข้อความอื่นๆ</h3>
           <FieldTextarea label="ข้อความท้ายเอกสาร" value={data.docFooterText} onChange={(v) => setData({ ...data, docFooterText: v })} placeholder="เช่น สินค้าที่ส่งมอบแล้วไม่สามารถเปลี่ยนหรือคืนได้" />

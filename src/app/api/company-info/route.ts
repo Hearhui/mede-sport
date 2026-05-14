@@ -43,6 +43,7 @@ export async function PUT(req: NextRequest) {
     docNoteDefault: body.docNoteDefault || null,
     docBankInfo: body.docBankInfo || null,
     docConditions: body.docConditions || null,
+    docSigners: body.docSigners || null,
     costMethod: body.costMethod || "JIT",
   };
 

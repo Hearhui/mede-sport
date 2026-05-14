@@ -13,6 +13,7 @@ export default function EditDocumentForm({ document: doc, customers }: { documen
   const [paymentTerm, setPaymentTerm] = useState(doc.paymentTerm || "Cash");
   const [vatType, setVatType] = useState(doc.vatType);
   const [showImages, setShowImages] = useState(doc.showImages);
+  const [showSignature, setShowSignature] = useState(doc.showSignature ?? true);
   const [discount, setDiscount] = useState(Number(doc.discount) || 0);
   const [deposit, setDeposit] = useState(Number(doc.deposit) || 0);
   const [shippingCost, setShippingCost] = useState(Number(doc.shippingCost) || 0);
@@ -62,7 +63,7 @@ export default function EditDocumentForm({ document: doc, customers }: { documen
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          customerId, paymentTerm, vatType, showImages, discount, deposit, shippingCost, notes, status,
+          customerId, paymentTerm, vatType, showImages, showSignature, discount, deposit, shippingCost, notes, status,
           items: items.filter((i) => i.description),
         }),
       });
@@ -127,10 +128,14 @@ export default function EditDocumentForm({ document: doc, customers }: { documen
               <option value="NO_VAT">ไม่มี VAT</option>
             </select>
           </div>
-          <div className="flex items-end">
+          <div className="flex items-end gap-4">
             <label className="flex items-center gap-2">
               <input type="checkbox" checked={showImages} onChange={(e) => setShowImages(e.target.checked)} className="rounded" />
               <span className="text-sm text-gray-600">แสดงรูป</span>
+            </label>
+            <label className="flex items-center gap-2">
+              <input type="checkbox" checked={showSignature} onChange={(e) => setShowSignature(e.target.checked)} className="rounded" />
+              <span className="text-sm text-gray-600">แสดงลายเซ็น</span>
             </label>
           </div>
         </div>

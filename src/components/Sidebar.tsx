@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
+import { useState, useEffect } from "react";
 
 const menuItems = [
   {
@@ -179,9 +180,34 @@ const menuItems = [
   },
 ];
 
+const typeLabelsShort: Record<string, string> = {
+  INVOICE: "INV", PURCHASE_ORDER: "PO", RECEIPT: "REC", DELIVERY_NOTE: "DN",
+};
+
 export default function Sidebar({ onClose }: { onClose?: () => void }) {
   const pathname = usePathname();
   const { data: session } = useSession();
+  const [notifCount, setNotifCount] = useState(0);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [showNotif, setShowNotif] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/notifications")
+      .then((r) => r.json())
+      .then((data) => {
+        setNotifCount(data.summary?.total || 0);
+        setNotifications(data.notifications || []);
+      })
+      .catch(() => {});
+    // Refresh every 5 minutes
+    const interval = setInterval(() => {
+      fetch("/api/notifications").then((r) => r.json()).then((data) => {
+        setNotifCount(data.summary?.total || 0);
+        setNotifications(data.notifications || []);
+      }).catch(() => {});
+    }, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <aside className="w-64 bg-white border-r border-gray-200 min-h-screen flex flex-col">
@@ -196,13 +222,65 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
             <p className="text-xs text-gray-500">MEDE SPORT</p>
           </div>
         </Link>
-        {onClose && (
-          <button onClick={onClose} className="lg:hidden p-1 rounded-lg hover:bg-gray-100">
-            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        )}
+        <div className="flex items-center gap-1">
+          {/* Notification Bell */}
+          <div className="relative">
+            <button onClick={() => setShowNotif(!showNotif)} className="p-2 rounded-lg hover:bg-gray-100 relative">
+              <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+              {notifCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full w-4.5 h-4.5 min-w-[18px] min-h-[18px] flex items-center justify-center leading-none">
+                  {notifCount > 99 ? "99+" : notifCount}
+                </span>
+              )}
+            </button>
+            {/* Notification dropdown */}
+            {showNotif && (
+              <div className="absolute left-0 top-full mt-1 w-80 bg-white border border-gray-200 rounded-xl shadow-xl z-50 max-h-96 overflow-y-auto">
+                <div className="p-3 border-b border-gray-100 flex items-center justify-between">
+                  <h3 className="font-semibold text-gray-900 text-sm">แจ้งเตือนเครดิต</h3>
+                  <button onClick={() => setShowNotif(false)} className="text-gray-400 hover:text-gray-600">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                {notifications.length === 0 ? (
+                  <div className="p-6 text-center text-gray-400 text-sm">ไม่มีแจ้งเตือน</div>
+                ) : (
+                  <div className="divide-y divide-gray-50">
+                    {notifications.map((n) => (
+                      <Link key={n.id} href={`/documents/${n.id}`} onClick={() => { setShowNotif(false); onClose?.(); }}
+                        className="block px-3 py-2.5 hover:bg-gray-50 transition">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium text-sm text-gray-900">{n.documentNo}</span>
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                            n.type === "overdue" ? "bg-red-100 text-red-700" :
+                            n.type === "due_today" ? "bg-amber-100 text-amber-700" :
+                            "bg-blue-100 text-blue-700"
+                          }`}>
+                            {n.type === "overdue" ? `เกิน ${Math.abs(n.daysLeft)} วัน` :
+                             n.type === "due_today" ? "ครบวันนี้" :
+                             `อีก ${n.daysLeft} วัน`}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-0.5">{n.customerName} - ฿{n.total.toLocaleString()}</p>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          {onClose && (
+            <button onClick={onClose} className="lg:hidden p-1 rounded-lg hover:bg-gray-100">
+              <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Navigation */}

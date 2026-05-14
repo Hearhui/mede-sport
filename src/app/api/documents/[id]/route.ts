@@ -61,6 +61,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         vatAmount,
         total,
         showImages: body.showImages,
+        showSignature: body.showSignature ?? true,
         status: body.status,
         notes: body.notes,
         items: {

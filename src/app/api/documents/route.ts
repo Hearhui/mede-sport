@@ -40,6 +40,10 @@ export async function POST(req: NextRequest) {
 
   if (!body.customerId) return NextResponse.json({ error: "กรุณาเลือกลูกค้า" }, { status: 400 });
 
+  // Fetch customer for credit term
+  const customer = await prisma.customer.findUnique({ where: { id: body.customerId } });
+  if (!customer) return NextResponse.json({ error: "ไม่พบลูกค้า" }, { status: 400 });
+
   // Generate document number
   const prefix = body.documentType === "QUOTATION" ? "QT" :
                  body.documentType === "INVOICE" ? "INV" :
@@ -80,14 +84,23 @@ export async function POST(req: NextRequest) {
   }
   total = total + shippingCost;
 
+  // Calculate dueDate from customer creditTermDays
+  const docDate = body.date ? new Date(body.date) : new Date();
+  let dueDate: Date | null = null;
+  if (customer.creditTermDays > 0) {
+    dueDate = new Date(docDate);
+    dueDate.setDate(dueDate.getDate() + customer.creditTermDays);
+  }
+
   const document = await prisma.document.create({
     data: {
       documentNo,
       documentType: body.documentType || "QUOTATION",
       customerId: body.customerId,
-      date: body.date ? new Date(body.date) : new Date(),
+      date: docDate,
+      dueDate,
       validUntil: body.validUntil ? new Date(body.validUntil) : null,
-      paymentTerm: body.paymentTerm || "Cash",
+      paymentTerm: customer.creditTermDays > 0 ? `${customer.creditTermDays} วัน` : (body.paymentTerm || "Cash"),
       vatType: body.vatType || "IN_VAT",
       vatRate,
       subtotal,
@@ -97,6 +110,7 @@ export async function POST(req: NextRequest) {
       vatAmount,
       total,
       showImages: body.showImages || false,
+      showSignature: body.showSignature ?? true,
       status: body.status || "DRAFT",
       notes: body.notes,
       items: {

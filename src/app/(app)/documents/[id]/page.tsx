@@ -177,7 +177,8 @@ export default async function DocumentDetailPage({ params }: { params: Promise<{
             {[
               ["วันที่", doc.date.toLocaleDateString("th-TH", { year: "numeric", month: "long", day: "numeric" })],
               doc.validUntil ? ["ใช้ได้ถึง", doc.validUntil.toLocaleDateString("th-TH")] : null,
-              doc.dueDate ? ["ครบกำหนด", doc.dueDate.toLocaleDateString("th-TH")] : null,
+              doc.dueDate ? ["ครบกำหนด", doc.dueDate.toLocaleDateString("th-TH", { year: "numeric", month: "long", day: "numeric" })] : null,
+              doc.customer.creditTermDays > 0 ? ["เครดิต", `${doc.customer.creditTermDays} วัน`] : null,
               ["เงื่อนไข", doc.paymentTerm || "Cash"],
               ["VAT", vatLabels[doc.vatType]],
               doc.referenceNo ? ["อ้างอิง", doc.referenceNo] : null,

@@ -4,7 +4,7 @@ import DocumentForm from "./DocumentForm";
 export default async function NewDocumentPage() {
   const customers = await prisma.customer.findMany({
     orderBy: { name: "asc" },
-    select: { id: true, customerCode: true, name: true },
+    select: { id: true, customerCode: true, name: true, creditTermDays: true, addressLine1: true, taxId: true },
   });
 
   return (

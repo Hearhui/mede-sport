@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-type Customer = { id: number; customerCode: string; name: string };
+type Customer = { id: number; customerCode: string; name: string; creditTermDays: number; addressLine1: string | null; taxId: string | null };
 type Item = {
   productId: number | null;
   itemType: "product" | "service";
@@ -31,6 +31,7 @@ export default function DocumentForm({
   const [paymentTerm, setPaymentTerm] = useState("Cash");
   const [vatType, setVatType] = useState("IN_VAT");
   const [showImages, setShowImages] = useState(false);
+  const [showSignature, setShowSignature] = useState(true);
   const [discount, setDiscount] = useState(0);
   const [deposit, setDeposit] = useState(0);
   const [shippingCost, setShippingCost] = useState(0);
@@ -113,7 +114,7 @@ export default function DocumentForm({
       });
       if (res.ok) {
         const cust = await res.json();
-        customers.push({ id: cust.id, customerCode: cust.customerCode, name: cust.name });
+        customers.push({ id: cust.id, customerCode: cust.customerCode, name: cust.name, creditTermDays: cust.creditTermDays || 0, addressLine1: cust.addressLine1 || null, taxId: cust.taxId || null });
         setCustomerId(cust.id);
         setCustomerSearch(cust.name);
         setShowNewCustomer(false);
@@ -155,6 +156,7 @@ export default function DocumentForm({
           paymentTerm,
           vatType,
           showImages,
+          showSignature,
           discount,
           deposit,
           shippingCost,
@@ -202,6 +204,9 @@ export default function DocumentForm({
                   onClick={() => {
                     setCustomerId(c.id);
                     setCustomerSearch(c.name);
+                    if (c.creditTermDays > 0) {
+                      setPaymentTerm(`${c.creditTermDays} วัน`);
+                    }
                   }}
                   className="w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-0"
                 >
@@ -212,12 +217,20 @@ export default function DocumentForm({
             </div>
           )}
         </div>
-        {customerId && (
-          <p className="text-green-600 text-sm mt-2">
-            เลือกแล้ว: {customers.find((c) => c.id === customerId)?.name}
-            <button type="button" onClick={() => { setCustomerId(""); setCustomerSearch(""); }} className="text-gray-400 hover:text-red-500 ml-2 text-xs">เปลี่ยน</button>
-          </p>
-        )}
+        {customerId && (() => {
+          const selectedCust = customers.find((c) => c.id === customerId);
+          return (
+            <div className="mt-2 space-y-1">
+              <p className="text-green-600 text-sm">
+                เลือกแล้ว: {selectedCust?.name}
+                <button type="button" onClick={() => { setCustomerId(""); setCustomerSearch(""); setPaymentTerm("Cash"); }} className="text-gray-400 hover:text-red-500 ml-2 text-xs">เปลี่ยน</button>
+              </p>
+              {selectedCust && selectedCust.creditTermDays > 0 && (
+                <p className="text-blue-600 text-xs">เครดิต {selectedCust.creditTermDays} วัน</p>
+              )}
+            </div>
+          );
+        })()}
 
         {/* Add new customer */}
         {!customerId && (
@@ -288,15 +301,14 @@ export default function DocumentForm({
               <option value="NO_VAT">ไม่มี VAT</option>
             </select>
           </div>
-          <div className="flex items-end">
+          <div className="flex items-end gap-4">
             <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={showImages}
-                onChange={(e) => setShowImages(e.target.checked)}
-                className="rounded"
-              />
+              <input type="checkbox" checked={showImages} onChange={(e) => setShowImages(e.target.checked)} className="rounded" />
               <span className="text-sm text-gray-600">แสดงรูปสินค้า</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked={showSignature} onChange={(e) => setShowSignature(e.target.checked)} className="rounded" />
+              <span className="text-sm text-gray-600">แสดงลายเซ็น</span>
             </label>
           </div>
         </div>

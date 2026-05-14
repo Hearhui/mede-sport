@@ -64,6 +64,9 @@ model CompanyInfo {
   docSignerLeft   String? @map("doc_signer_left")
   docSignerCenter String? @map("doc_signer_center")
   docSignerRight  String? @map("doc_signer_right")
+  // Per-document-type signer config (JSON)
+  // { "QUOTATION": { "left": "...", "center": "...", "right": "..." }, ... }
+  docSigners      Json?   @map("doc_signers")
   docNoteDefault  String? @map("doc_note_default")
   docBankInfo     String? @map("doc_bank_info")
   docConditions   String? @map("doc_conditions") @db.Text // เงื่อนไข/conditions ที่แสดงท้ายเอกสาร
@@ -313,6 +316,7 @@ model Document {
   total            Decimal        @default(0) @db.Decimal(12, 2)
   vatType          VatType        @default(NO_VAT) @map("vat_type")
   showImages       Boolean        @default(false) @map("show_images")
+  showSignature    Boolean        @default(true) @map("show_signature")
   status           DocumentStatus @default(DRAFT)
   referenceNo      String?        @map("reference_no")
   notes            String?

@@ -72,20 +72,30 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     vatAmount = subtotal - subtotal / (1 + vatRate / 100);
   }
 
+  // Calculate dueDate from customer creditTermDays
+  const docDate = new Date();
+  let dueDate: Date | null = null;
+  if (source.customer.creditTermDays > 0) {
+    dueDate = new Date(docDate);
+    dueDate.setDate(dueDate.getDate() + source.customer.creditTermDays);
+  }
+
   const newDoc = await prisma.document.create({
     data: {
       documentNo,
       documentType: targetType,
       parentDocumentId: source.id,
       customerId: source.customerId,
-      date: new Date(),
-      paymentTerm: body.paymentTerm || source.paymentTerm,
+      date: docDate,
+      dueDate,
+      paymentTerm: source.customer.creditTermDays > 0 ? `${source.customer.creditTermDays} วัน` : (body.paymentTerm || source.paymentTerm),
       vatType,
       vatRate,
       subtotal,
       vatAmount,
       total,
       showImages: body.showImages ?? source.showImages,
+      showSignature: body.showSignature ?? true,
       status: "DRAFT",
       referenceNo: source.documentNo,
       notes: body.notes,
