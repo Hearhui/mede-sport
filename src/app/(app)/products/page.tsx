@@ -6,35 +6,53 @@ import ImportExportBar from "@/components/ImportExportBar";
 export default async function ProductsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ search?: string; page?: string }>;
+  searchParams: Promise<{ search?: string; page?: string; category?: string; brand?: string; minPrice?: string; maxPrice?: string }>;
 }) {
   const params = await searchParams;
   const search = params.search || "";
   const page = parseInt(params.page || "1");
+  const categoryFilter = params.category || "";
+  const brandFilter = params.brand || "";
+  const minPrice = params.minPrice || "";
+  const maxPrice = params.maxPrice || "";
   const limit = 25;
 
-  const where = search
-    ? {
-        OR: [
-          { name: { contains: search, mode: "insensitive" as const } },
-          { productCode: { contains: search, mode: "insensitive" as const } },
-          { brand: { contains: search, mode: "insensitive" as const } },
-        ],
-      }
-    : {};
+  const where: any = {};
+  if (search) {
+    where.OR = [
+      { name: { contains: search, mode: "insensitive" as const } },
+      { productCode: { contains: search, mode: "insensitive" as const } },
+      { brand: { contains: search, mode: "insensitive" as const } },
+    ];
+  }
+  if (categoryFilter) where.categoryId = parseInt(categoryFilter);
+  if (brandFilter) where.brand = { contains: brandFilter, mode: "insensitive" as const };
+  if (minPrice || maxPrice) {
+    where.sellingPrice = {};
+    if (minPrice) where.sellingPrice.gte = parseFloat(minPrice);
+    if (maxPrice) where.sellingPrice.lte = parseFloat(maxPrice);
+  }
 
-  const [products, total] = await Promise.all([
+  const [products, total, categories, brands] = await Promise.all([
     prisma.product.findMany({
       where,
       include: {
         images: { where: { isPrimary: true }, take: 1 },
         inventory: { include: { location: true } },
+        category: true,
       },
       orderBy: { name: "asc" },
       skip: (page - 1) * limit,
       take: limit,
     }),
     prisma.product.count({ where }),
+    prisma.category.findMany({ orderBy: { name: "asc" } }),
+    prisma.product.findMany({
+      where: { brand: { not: null } },
+      select: { brand: true },
+      distinct: ["brand"],
+      orderBy: { brand: "asc" },
+    }),
   ]);
 
   const totalPages = Math.ceil(total / limit);
@@ -61,8 +79,8 @@ export default async function ProductsPage({
         />
       </div>
 
-      {/* Search */}
-      <form className="mb-6">
+      {/* Search & Filters */}
+      <form className="mb-6 space-y-3">
         <input
           type="text"
           name="search"
@@ -70,6 +88,68 @@ export default async function ProductsPage({
           placeholder="ค้นหาสินค้า... (ชื่อ, รหัส, แบรนด์)"
           className="w-full md:w-96 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
         />
+        <div className="flex flex-wrap gap-3 items-end">
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">หมวดหมู่</label>
+            <select name="category" defaultValue={categoryFilter}
+              className="px-3 py-2 border border-gray-300 rounded-lg bg-white text-sm min-w-[140px]">
+              <option value="">ทุกหมวดหมู่</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">แบรนด์</label>
+            <select name="brand" defaultValue={brandFilter}
+              className="px-3 py-2 border border-gray-300 rounded-lg bg-white text-sm min-w-[140px]">
+              <option value="">ทุกแบรนด์</option>
+              {brands.map((b) => (
+                <option key={b.brand} value={b.brand!}>{b.brand}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">ราคาต่ำสุด</label>
+            <input type="number" name="minPrice" defaultValue={minPrice} placeholder="0"
+              className="w-28 px-3 py-2 border border-gray-300 rounded-lg text-sm text-right" />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">ราคาสูงสุด</label>
+            <input type="number" name="maxPrice" defaultValue={maxPrice} placeholder="ไม่จำกัด"
+              className="w-28 px-3 py-2 border border-gray-300 rounded-lg text-sm text-right" />
+          </div>
+          <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
+            ค้นหา
+          </button>
+          {(categoryFilter || brandFilter || minPrice || maxPrice || search) && (
+            <a href="/products" className="px-4 py-2 text-gray-500 hover:text-gray-700 text-sm">ล้าง filter</a>
+          )}
+        </div>
+        {(categoryFilter || brandFilter || minPrice || maxPrice) && (
+          <div className="flex flex-wrap gap-2">
+            {categoryFilter && (
+              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+                หมวด: {categories.find(c => c.id === parseInt(categoryFilter))?.name}
+              </span>
+            )}
+            {brandFilter && (
+              <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
+                แบรนด์: {brandFilter}
+              </span>
+            )}
+            {minPrice && (
+              <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                ราคาตั้งแต่ ฿{Number(minPrice).toLocaleString()}
+              </span>
+            )}
+            {maxPrice && (
+              <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                ราคาไม่เกิน ฿{Number(maxPrice).toLocaleString()}
+              </span>
+            )}
+          </div>
+        )}
       </form>
 
       {/* Table */}
@@ -79,6 +159,7 @@ export default async function ProductsPage({
             <tr>
               <th className="text-left px-4 py-3 font-medium text-gray-600">รหัส</th>
               <th className="text-left px-4 py-3 font-medium text-gray-600">ชื่อสินค้า</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">หมวด</th>
               <th className="text-left px-4 py-3 font-medium text-gray-600">หน่วย</th>
               <th className="text-right px-4 py-3 font-medium text-gray-600">ราคาขาย</th>
               <th className="text-right px-4 py-3 font-medium text-gray-600">ทุน</th>
@@ -110,6 +191,7 @@ export default async function ProductsPage({
                       <span className="font-medium text-gray-900">{p.name}</span>
                     </div>
                   </td>
+                  <td className="px-4 py-3 text-gray-400 text-xs">{(p as any).category?.name || "-"}</td>
                   <td className="px-4 py-3 text-gray-500">{p.unit}</td>
                   <td className="px-4 py-3 text-right font-medium">฿{Number(p.sellingPrice).toLocaleString()}</td>
                   <td className="px-4 py-3 text-right text-gray-500">฿{Number(p.costPrice).toLocaleString()}</td>
@@ -137,19 +219,28 @@ export default async function ProductsPage({
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex justify-center gap-2 mt-6">
-          {Array.from({ length: Math.min(totalPages, 10) }, (_, i) => i + 1).map((p) => (
-            <Link
-              key={p}
-              href={`/products?search=${search}&page=${p}`}
-              className={`px-3 py-1 rounded text-sm ${p === page ? 'bg-blue-600 text-white' : 'bg-white border text-gray-600 hover:bg-gray-50'}`}
-            >
-              {p}
-            </Link>
-          ))}
-        </div>
-      )}
+      {totalPages > 1 && (() => {
+        const filterParams = new URLSearchParams();
+        if (search) filterParams.set("search", search);
+        if (categoryFilter) filterParams.set("category", categoryFilter);
+        if (brandFilter) filterParams.set("brand", brandFilter);
+        if (minPrice) filterParams.set("minPrice", minPrice);
+        if (maxPrice) filterParams.set("maxPrice", maxPrice);
+        const qs = filterParams.toString();
+        return (
+          <div className="flex justify-center gap-2 mt-6">
+            {Array.from({ length: Math.min(totalPages, 10) }, (_, i) => i + 1).map((p) => (
+              <Link
+                key={p}
+                href={`/products?${qs}&page=${p}`}
+                className={`px-3 py-1 rounded text-sm ${p === page ? 'bg-blue-600 text-white' : 'bg-white border text-gray-600 hover:bg-gray-50'}`}
+              >
+                {p}
+              </Link>
+            ))}
+          </div>
+        );
+      })()}
     </div>
   );
 }

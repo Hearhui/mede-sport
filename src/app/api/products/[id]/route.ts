@@ -14,26 +14,21 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const body = await req.json();
+
+  // Build update data — only include fields that are provided
+  const data: any = {};
+  const fields = [
+    "name", "unit", "sellingPrice", "costPrice", "brand", "description",
+    "sku", "barcode", "color", "size", "weight", "material",
+    "origin", "warranty", "minOrder", "specifications",
+  ];
+  for (const f of fields) {
+    if (f in body) data[f] = body[f] ?? null;
+  }
+
   const product = await prisma.product.update({
     where: { id: parseInt(id) },
-    data: {
-      name: body.name,
-      unit: body.unit,
-      sellingPrice: body.sellingPrice,
-      costPrice: body.costPrice,
-      brand: body.brand || null,
-      description: body.description || null,
-      sku: body.sku || null,
-      barcode: body.barcode || null,
-      color: body.color || null,
-      size: body.size || null,
-      weight: body.weight || null,
-      material: body.material || null,
-      origin: body.origin || null,
-      warranty: body.warranty || null,
-      minOrder: body.minOrder || null,
-      specifications: body.specifications || null,
-    },
+    data,
   });
   return NextResponse.json(product);
 }

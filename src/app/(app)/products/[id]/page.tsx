@@ -5,6 +5,7 @@ import DeleteButton from "@/components/DeleteButton";
 import ProductImageManager from "./ProductImageManager";
 import ProductAttachments from "./ProductAttachments";
 import CostEditor from "./CostEditor";
+import ProductLookup from "./ProductLookup";
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -60,6 +61,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           </div>
         </div>
         <div className="flex gap-2">
+          <ProductLookup productId={product.id} productName={product.name} productBrand={product.brand} />
           <Link href={`/products/${product.id}/edit`}
             className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium">แก้ไข</Link>
           <DeleteButton apiUrl={`/api/products/${product.id}`} itemName={product.name} redirectUrl="/products" size="md" />

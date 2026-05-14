@@ -5,16 +5,26 @@ export async function GET(req: NextRequest) {
   const search = req.nextUrl.searchParams.get("search") || "";
   const page = parseInt(req.nextUrl.searchParams.get("page") || "1");
   const limit = parseInt(req.nextUrl.searchParams.get("limit") || "20");
+  const categoryId = req.nextUrl.searchParams.get("category") || "";
+  const brand = req.nextUrl.searchParams.get("brand") || "";
+  const minPrice = req.nextUrl.searchParams.get("minPrice") || "";
+  const maxPrice = req.nextUrl.searchParams.get("maxPrice") || "";
 
-  const where = search
-    ? {
-        OR: [
-          { name: { contains: search, mode: "insensitive" as const } },
-          { productCode: { contains: search, mode: "insensitive" as const } },
-          { brand: { contains: search, mode: "insensitive" as const } },
-        ],
-      }
-    : {};
+  const where: any = {};
+  if (search) {
+    where.OR = [
+      { name: { contains: search, mode: "insensitive" } },
+      { productCode: { contains: search, mode: "insensitive" } },
+      { brand: { contains: search, mode: "insensitive" } },
+    ];
+  }
+  if (categoryId) where.categoryId = parseInt(categoryId);
+  if (brand) where.brand = { contains: brand, mode: "insensitive" };
+  if (minPrice || maxPrice) {
+    where.sellingPrice = {};
+    if (minPrice) where.sellingPrice.gte = parseFloat(minPrice);
+    if (maxPrice) where.sellingPrice.lte = parseFloat(maxPrice);
+  }
 
   const [products, total] = await Promise.all([
     prisma.product.findMany({
