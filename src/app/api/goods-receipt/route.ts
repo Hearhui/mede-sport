@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { recalcProductCosts } from "@/lib/cost-utils";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
@@ -59,6 +60,10 @@ export async function POST(req: NextRequest) {
     location = await prisma.location.create({ data: { code: locationCode, name: locationCode } });
   }
 
+  // Get cost method setting
+  const company = await prisma.companyInfo.findFirst({ select: { costMethod: true } });
+  const costMethod = company?.costMethod || "JIT";
+
   const result = await prisma.$transaction(async (tx) => {
     const receipt = await tx.goodsReceipt.create({
       data: {
@@ -99,11 +104,8 @@ export async function POST(req: NextRequest) {
         });
       }
 
-      // Update cost price
-      await tx.product.update({
-        where: { id: item.productId },
-        data: { costPrice: item.unitCost },
-      });
+      // Recalculate JIT + Average cost
+      await recalcProductCosts(tx, item.productId, costMethod);
 
       // Record movement
       await tx.inventoryMovement.create({

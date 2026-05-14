@@ -43,11 +43,21 @@ export async function PUT(req: NextRequest) {
     docNoteDefault: body.docNoteDefault || null,
     docBankInfo: body.docBankInfo || null,
     docConditions: body.docConditions || null,
+    costMethod: body.costMethod || "JIT",
   };
 
   let company;
   if (existing) {
     company = await prisma.companyInfo.update({ where: { id: existing.id }, data });
+
+    // If costMethod changed, bulk update all products' costPrice
+    if (body.costMethod && body.costMethod !== existing.costMethod) {
+      if (body.costMethod === "AVG") {
+        await prisma.$executeRaw`UPDATE products SET cost_price = avg_cost_price WHERE avg_cost_price > 0`;
+      } else {
+        await prisma.$executeRaw`UPDATE products SET cost_price = last_cost_price WHERE last_cost_price > 0`;
+      }
+    }
   } else {
     company = await prisma.companyInfo.create({ data });
   }

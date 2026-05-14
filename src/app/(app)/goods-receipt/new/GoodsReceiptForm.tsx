@@ -9,6 +9,7 @@ type Item = {
   description: string;
   quantity: number;
   unitCost: number;
+  prevCost?: number; // previous cost for delta display
 };
 
 export default function GoodsReceiptForm({
@@ -52,12 +53,14 @@ export default function GoodsReceiptForm({
   }
 
   function selectProduct(idx: number, product: any) {
+    const lastCost = Number(product.lastCostPrice || product.costPrice);
     const newItems = [...items];
     newItems[idx] = {
       productId: product.id,
       description: product.name,
       quantity: 1,
-      unitCost: Number(product.costPrice),
+      unitCost: lastCost,
+      prevCost: lastCost,
     };
     setItems(newItems);
     setProductResults([]);
@@ -240,6 +243,11 @@ export default function GoodsReceiptForm({
                 <input type="number" placeholder="ราคาทุน" value={item.unitCost || ""}
                   onChange={(e) => updateItem(idx, "unitCost", parseFloat(e.target.value) || 0)}
                   className="w-28 px-3 py-2.5 border border-gray-300 rounded-lg text-sm text-right" />
+                {item.prevCost && item.unitCost > 0 && item.unitCost !== item.prevCost && (
+                  <p className={`text-[10px] mt-0.5 text-right ${item.unitCost > item.prevCost ? "text-red-500" : "text-green-500"}`}>
+                    {item.unitCost > item.prevCost ? "▲" : "▼"} {Math.abs(Math.round((item.unitCost - item.prevCost) / item.prevCost * 100))}% จากเดิม
+                  </p>
+                )}
               </div>
               <span className="w-28 text-right font-semibold text-sm mt-2.5 tabular-nums">
                 ฿{(item.unitCost * item.quantity).toLocaleString()}

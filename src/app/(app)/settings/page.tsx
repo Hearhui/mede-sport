@@ -215,6 +215,33 @@ export default function SettingsPage() {
             <Field label="ใบส่งสินค้า" value={data.docPrefixDelivery} onChange={(v) => setData({ ...data, docPrefixDelivery: v })} placeholder="DN" />
             <Field label="ใบสั่งซื้อ" value={data.docPrefixPo} onChange={(v) => setData({ ...data, docPrefixPo: v })} placeholder="PO" />
           </div>
+
+          <h3 className="text-sm font-semibold text-gray-700 pt-4">วิธีคิดต้นทุน (Cost Method)</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <label className={`flex items-start gap-3 cursor-pointer p-4 border rounded-xl transition ${
+              (data.costMethod || "JIT") === "JIT" ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-300"}`}>
+              <input type="radio" name="costMethod" value="JIT"
+                checked={(data.costMethod || "JIT") === "JIT"}
+                onChange={() => setData({ ...data, costMethod: "JIT" })}
+                className="mt-1" />
+              <div>
+                <p className="font-medium text-gray-900">ต้นทุนล่าสุด (JIT)</p>
+                <p className="text-xs text-gray-500 mt-1">ใช้ราคาทุนจากใบรับสินค้าครั้งล่าสุด เหมาะกับธุรกิจที่ราคาเปลี่ยนบ่อย</p>
+              </div>
+            </label>
+            <label className={`flex items-start gap-3 cursor-pointer p-4 border rounded-xl transition ${
+              data.costMethod === "AVG" ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-300"}`}>
+              <input type="radio" name="costMethod" value="AVG"
+                checked={data.costMethod === "AVG"}
+                onChange={() => setData({ ...data, costMethod: "AVG" })}
+                className="mt-1" />
+              <div>
+                <p className="font-medium text-gray-900">ต้นทุนเฉลี่ย (Average)</p>
+                <p className="text-xs text-gray-500 mt-1">ใช้ราคาทุนเฉลี่ยถ่วงน้ำหนักจากทุกใบรับ เหมาะกับธุรกิจที่ราคาคงที่</p>
+              </div>
+            </label>
+          </div>
+          <p className="text-xs text-amber-600">การเปลี่ยนวิธีคิดต้นทุนจะอัปเดตราคาทุนของสินค้าทั้งหมดทันที</p>
         </div>
       )}
 

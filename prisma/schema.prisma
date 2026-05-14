@@ -67,6 +67,7 @@ model CompanyInfo {
   docNoteDefault  String? @map("doc_note_default")
   docBankInfo     String? @map("doc_bank_info")
   docConditions   String? @map("doc_conditions") @db.Text // เงื่อนไข/conditions ที่แสดงท้ายเอกสาร
+  costMethod      String  @default("JIT") @map("cost_method") // "JIT" หรือ "AVG"
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -152,7 +153,9 @@ model Product {
   name         String
   unit         String   @default("อัน")
   sellingPrice Decimal  @default(0) @map("selling_price") @db.Decimal(12, 2)
-  costPrice    Decimal  @default(0) @map("cost_price") @db.Decimal(12, 2)
+  costPrice      Decimal  @default(0) @map("cost_price") @db.Decimal(12, 2)
+  lastCostPrice  Decimal  @default(0) @map("last_cost_price") @db.Decimal(12, 2)
+  avgCostPrice   Decimal  @default(0) @map("avg_cost_price") @db.Decimal(12, 2)
   categoryId   Int?     @map("category_id")
   brand        String?
   description  String?
