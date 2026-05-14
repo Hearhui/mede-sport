@@ -93,7 +93,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 bg-gray-100 rounded-lg p-1 w-fit">
+      <div className="flex gap-1 mb-6 bg-gray-100 rounded-lg p-1 w-full sm:w-fit overflow-x-auto">
         {tabs.map((t) => (
           <button key={t.key} onClick={() => setTab(t.key)}
             className={`px-4 py-2 rounded-md text-sm font-medium transition ${tab === t.key ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>
@@ -275,9 +275,9 @@ export default function SettingsPage() {
               <p className="text-xs text-red-500">กรุณา Backup ก่อนปิดปี!</p>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <input type="text" value={yearEndConfirm} onChange={(e) => setYearEndConfirm(e.target.value)}
-                placeholder='พิมพ์ "ปิดปี" เพื่อยืนยัน' className="px-3 py-2 border border-red-300 rounded-lg text-sm w-48" />
+                placeholder='พิมพ์ "ปิดปี" เพื่อยืนยัน' className="px-3 py-2 border border-red-300 rounded-lg text-sm w-full sm:w-48" />
               <button onClick={async () => {
                 setResetting(true);
                 const res = await fetch("/api/admin/year-end", {
@@ -324,10 +324,10 @@ export default function SettingsPage() {
           <div className="bg-red-50 rounded-xl border-2 border-red-300 p-6">
             <h2 className="text-lg font-bold text-red-700 mb-2">Reset Database ทั้งหมด</h2>
             <p className="text-sm text-red-600 mb-4">ลบข้อมูลทั้งหมดในระบบ เริ่มต้นใหม่ 100% (ยกเว้น Company Info และ User)</p>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <input type="text" value={resetConfirm} onChange={(e) => setResetConfirm(e.target.value)}
                 placeholder='พิมพ์ "RESET" เพื่อยืนยัน'
-                className="px-3 py-2 border border-red-300 rounded-lg text-sm w-60" />
+                className="px-3 py-2 border border-red-300 rounded-lg text-sm w-full sm:w-60" />
               <button onClick={() => handleReset("ALL")}
                 disabled={resetConfirm !== "RESET" || resetting}
                 className="px-6 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 disabled:opacity-50">

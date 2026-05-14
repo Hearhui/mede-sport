@@ -258,81 +258,102 @@ export default function DocumentForm({
 
         <div className="space-y-3">
           {items.map((item, idx) => (
-            <div key={idx} className={`flex gap-3 items-start p-3 rounded-lg ${item.itemType === "service" ? "bg-green-50" : "bg-gray-50"}`}>
-              <div className="mt-3 w-6 text-center">
-                <span className="text-xs text-gray-400">{idx + 1}</span>
-                <span className={`block text-[9px] mt-0.5 ${item.itemType === "service" ? "text-green-600" : "text-blue-500"}`}>
-                  {item.itemType === "service" ? "บริการ" : "สินค้า"}
+            <div key={idx} className={`p-3 rounded-lg ${item.itemType === "service" ? "bg-green-50" : "bg-gray-50"}`}>
+              {/* Mobile: item number badge */}
+              <div className="flex items-center justify-between sm:hidden mb-2">
+                <span className={`text-xs px-2 py-0.5 rounded ${item.itemType === "service" ? "bg-green-200 text-green-700" : "bg-blue-100 text-blue-600"}`}>
+                  #{idx + 1} {item.itemType === "service" ? "บริการ" : "สินค้า"}
                 </span>
+                <button type="button" onClick={() => removeItem(idx)} className="text-red-400 hover:text-red-600">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
               </div>
-              <div className="flex-1 relative">
-                <input
-                  type="text"
-                  placeholder={item.itemType === "service" ? "รายละเอียดบริการ (พิมพ์ได้อิสระ)" : "ชื่อสินค้า (พิมพ์เพื่อค้นหาจาก stock หรือพิมพ์ใหม่)"}
-                  value={item.description}
-                  onChange={(e) => {
-                    updateItem(idx, "description", e.target.value);
-                    updateItem(idx, "productId", null);
-                    searchProducts(e.target.value, idx);
-                  }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                />
-                {searchingIdx === idx && productResults.length > 0 && (
-                  <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                    {productResults.map((p: any) => (
-                      <button
-                        key={p.id}
-                        type="button"
-                        onClick={() => selectProduct(idx, p)}
-                        className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm border-b border-gray-100 last:border-0"
-                      >
-                        <span className="font-medium">{p.name}</span>
-                        <span className="text-gray-400 ml-2">฿{Number(p.sellingPrice).toLocaleString()}/{p.unit}</span>
-                      </button>
-                    ))}
+
+              {/* Desktop row / Mobile stacked */}
+              <div className="flex gap-3 items-start">
+                <div className="mt-3 w-6 text-center hidden sm:block">
+                  <span className="text-xs text-gray-400">{idx + 1}</span>
+                  <span className={`block text-[9px] mt-0.5 ${item.itemType === "service" ? "text-green-600" : "text-blue-500"}`}>
+                    {item.itemType === "service" ? "บริการ" : "สินค้า"}
+                  </span>
+                </div>
+                <div className="flex-1 flex flex-col sm:flex-row gap-2 sm:gap-3 sm:items-start">
+                  <div className="flex-1 relative">
+                    <input
+                      type="text"
+                      placeholder={item.itemType === "service" ? "รายละเอียดบริการ (พิมพ์ได้อิสระ)" : "ชื่อสินค้า (พิมพ์เพื่อค้นหาจาก stock หรือพิมพ์ใหม่)"}
+                      value={item.description}
+                      onChange={(e) => {
+                        updateItem(idx, "description", e.target.value);
+                        updateItem(idx, "productId", null);
+                        searchProducts(e.target.value, idx);
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    />
+                    {searchingIdx === idx && productResults.length > 0 && (
+                      <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                        {productResults.map((p: any) => (
+                          <button
+                            key={p.id}
+                            type="button"
+                            onClick={() => selectProduct(idx, p)}
+                            className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm border-b border-gray-100 last:border-0"
+                          >
+                            <span className="font-medium">{p.name}</span>
+                            <span className="text-gray-400 ml-2">฿{Number(p.sellingPrice).toLocaleString()}/{p.unit}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                )}
+                  <div className="flex gap-2 sm:gap-3">
+                    <input
+                      type="text"
+                      placeholder="หน่วย"
+                      value={item.unit}
+                      onChange={(e) => updateItem(idx, "unit", e.target.value)}
+                      className="w-16 sm:w-20 px-3 py-2 border border-gray-300 rounded-lg text-sm text-center"
+                    />
+                    <input
+                      type="number"
+                      placeholder="ราคา"
+                      value={item.unitPrice || ""}
+                      onChange={(e) => updateItem(idx, "unitPrice", parseFloat(e.target.value) || 0)}
+                      className="flex-1 sm:flex-none sm:w-28 px-3 py-2 border border-gray-300 rounded-lg text-sm text-right"
+                    />
+                    <input
+                      type="number"
+                      placeholder="จำนวน"
+                      value={item.quantity || ""}
+                      onChange={(e) => updateItem(idx, "quantity", parseInt(e.target.value) || 0)}
+                      className="w-16 sm:w-20 px-3 py-2 border border-gray-300 rounded-lg text-sm text-right"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between sm:justify-end gap-2">
+                    <span className="sm:w-28 text-right font-medium text-sm sm:mt-2">
+                      ฿{(item.unitPrice * item.quantity).toLocaleString()}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => removeItem(idx)}
+                      className="text-red-400 hover:text-red-600 sm:mt-2 hidden sm:block"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
               </div>
-              <input
-                type="text"
-                placeholder="หน่วย"
-                value={item.unit}
-                onChange={(e) => updateItem(idx, "unit", e.target.value)}
-                className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-sm text-center"
-              />
-              <input
-                type="number"
-                placeholder="ราคา"
-                value={item.unitPrice || ""}
-                onChange={(e) => updateItem(idx, "unitPrice", parseFloat(e.target.value) || 0)}
-                className="w-28 px-3 py-2 border border-gray-300 rounded-lg text-sm text-right"
-              />
-              <input
-                type="number"
-                placeholder="จำนวน"
-                value={item.quantity || ""}
-                onChange={(e) => updateItem(idx, "quantity", parseInt(e.target.value) || 0)}
-                className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-sm text-right"
-              />
-              <span className="w-28 text-right font-medium text-sm mt-2">
-                ฿{(item.unitPrice * item.quantity).toLocaleString()}
-              </span>
-              <button
-                type="button"
-                onClick={() => removeItem(idx)}
-                className="text-red-400 hover:text-red-600 mt-2"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-              </button>
             </div>
           ))}
         </div>
 
         {/* Totals */}
         <div className="mt-6 flex justify-end">
-          <div className="w-80 space-y-2 text-sm">
+          <div className="w-full sm:w-80 space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-500">ยอดรวมทั้งสิ้น / Sub Total</span>
               <span className="font-medium">฿{subtotal.toLocaleString("th-TH", { minimumFractionDigits: 2 })}</span>
