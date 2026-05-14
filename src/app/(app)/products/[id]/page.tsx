@@ -4,6 +4,7 @@ import Link from "next/link";
 import DeleteButton from "@/components/DeleteButton";
 import ProductImageManager from "./ProductImageManager";
 import ProductAttachments from "./ProductAttachments";
+import CostEditor from "./CostEditor";
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -87,52 +88,26 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
         {/* Info */}
         <div className="col-span-2 space-y-4">
-          {/* Price Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-              <p className="text-xs text-gray-500 font-medium">ราคาขาย</p>
-              <p className="text-2xl font-bold text-blue-600 mt-1">฿{Number(product.sellingPrice).toLocaleString()}</p>
-            </div>
-            <div className={`rounded-xl border p-4 shadow-sm ${costMethod === "JIT" ? "bg-green-50 border-green-300" : "bg-white border-gray-200"}`}>
-              <p className="text-xs text-gray-500 font-medium">ต้นทุนล่าสุด (JIT) {costMethod === "JIT" && <span className="text-green-600">● ใช้งาน</span>}</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">฿{Number(product.lastCostPrice).toLocaleString()}</p>
-            </div>
-            <div className={`rounded-xl border p-4 shadow-sm ${costMethod === "AVG" ? "bg-green-50 border-green-300" : "bg-white border-gray-200"}`}>
-              <p className="text-xs text-gray-500 font-medium">ต้นทุนเฉลี่ย (AVG) {costMethod === "AVG" && <span className="text-green-600">● ใช้งาน</span>}</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">฿{Number(product.avgCostPrice).toLocaleString()}</p>
-            </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-              <p className="text-xs text-gray-500 font-medium">กำไร (Margin)</p>
-              <p className={`text-2xl font-bold mt-1 ${parseFloat(margin) >= 20 ? 'text-green-600' : parseFloat(margin) >= 10 ? 'text-yellow-600' : 'text-red-600'}`}>
-                {margin}%
-              </p>
-              <p className="text-xs text-gray-400">฿{(Number(product.sellingPrice) - Number(product.costPrice)).toLocaleString()} / หน่วย</p>
-            </div>
-          </div>
-
-          {/* Cost History */}
-          {product.receiptItems.length > 0 && (
-            <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-              <h3 className="font-semibold text-gray-900 mb-3">ประวัติต้นทุน (5 ล่าสุด)</h3>
-              <div className="space-y-2">
-                {product.receiptItems.map((ri) => (
-                  <div key={ri.id} className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg text-sm">
-                    <div>
-                      <span className="font-mono text-xs text-blue-600">{ri.goodsReceipt.grnNumber}</span>
-                      <span className="text-gray-400 mx-2">|</span>
-                      <span className="text-gray-500">{ri.goodsReceipt.date.toLocaleDateString("th-TH")}</span>
-                      <span className="text-gray-400 mx-2">|</span>
-                      <span className="text-gray-600">{ri.goodsReceipt.supplier.name}</span>
-                    </div>
-                    <div className="text-right">
-                      <span className="font-bold">฿{Number(ri.unitCost).toLocaleString()}</span>
-                      <span className="text-gray-400 text-xs ml-2">x {ri.quantityReceived}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          {/* Cost Editor — JIT / AVG / Custom + History */}
+          <CostEditor
+            productId={product.id}
+            costPrice={Number(product.costPrice)}
+            lastCostPrice={Number(product.lastCostPrice)}
+            avgCostPrice={Number(product.avgCostPrice)}
+            sellingPrice={Number(product.sellingPrice)}
+            description={product.description || ""}
+            costMethod={costMethod}
+            receiptItems={product.receiptItems.map((ri) => ({
+              id: ri.id,
+              unitCost: Number(ri.unitCost),
+              quantityReceived: ri.quantityReceived,
+              goodsReceipt: {
+                grnNumber: ri.goodsReceipt.grnNumber,
+                date: ri.goodsReceipt.date.toISOString(),
+                supplier: ri.goodsReceipt.supplier,
+              },
+            }))}
+          />
 
           {/* Stock Summary */}
           <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
