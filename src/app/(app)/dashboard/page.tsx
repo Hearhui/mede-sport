@@ -195,17 +195,17 @@ export default function DashboardPage() {
       </div>
 
       {/* Stock Summary */}
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
           <h2 className="text-lg font-bold text-gray-900 mb-2">มูลค่าสต็อค</h2>
           <div className="grid grid-cols-2 gap-4 mt-4">
-            <div>
+            <div className="min-w-0">
               <p className="text-sm text-gray-500">มูลค่าทุน</p>
-              <p className="text-xl font-bold text-gray-900">฿{Math.round(k.stockCost).toLocaleString()}</p>
+              <p className="text-lg md:text-xl font-bold text-gray-900 truncate">฿{Math.round(k.stockCost).toLocaleString()}</p>
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="text-sm text-gray-500">มูลค่าขาย</p>
-              <p className="text-xl font-bold text-blue-600">฿{Math.round(k.stockSell).toLocaleString()}</p>
+              <p className="text-lg md:text-xl font-bold text-blue-600 truncate">฿{Math.round(k.stockSell).toLocaleString()}</p>
             </div>
           </div>
         </div>
@@ -224,15 +224,15 @@ export default function DashboardPage() {
 
 function KpiCard({ label, value, sub, color, icon }: { label: string; value: string; sub: string; color: string; icon: string }) {
   return (
-    <div className="relative overflow-hidden rounded-2xl p-5 text-white shadow-lg">
+    <div className="relative overflow-hidden rounded-2xl p-4 md:p-5 text-white shadow-lg">
       <div className={`absolute inset-0 bg-gradient-to-br ${color}`} />
-      <div className="relative">
+      <div className="relative min-w-0">
         <div className="flex items-center justify-between">
-          <p className="text-sm font-medium text-white/80">{label}</p>
-          <span className="text-2xl">{icon}</span>
+          <p className="text-xs md:text-sm font-medium text-white/80 truncate">{label}</p>
+          <span className="text-xl md:text-2xl shrink-0">{icon}</span>
         </div>
-        <p className="text-2xl font-bold mt-2">{value}</p>
-        <p className="text-xs text-white/70 mt-1">{sub}</p>
+        <p className="text-lg md:text-2xl font-bold mt-1 md:mt-2 truncate">{value}</p>
+        <p className="text-[10px] md:text-xs text-white/70 mt-0.5 md:mt-1 truncate">{sub}</p>
       </div>
     </div>
   );

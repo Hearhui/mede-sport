@@ -91,21 +91,21 @@ export default function CostAnalysisPage() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <p className="text-sm text-gray-500">มูลค่าสต็อค (ทุน)</p>
-          <p className="text-2xl font-bold text-gray-900 mt-1">฿{Math.round(totalCost).toLocaleString()}</p>
+        <div className="bg-white rounded-xl border border-gray-200 p-4 min-w-0">
+          <p className="text-xs md:text-sm text-gray-500">มูลค่าสต็อค (ทุน)</p>
+          <p className="text-lg md:text-2xl font-bold text-gray-900 mt-1 truncate">฿{Math.round(totalCost).toLocaleString()}</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <p className="text-sm text-gray-500">มูลค่าขาย (ถ้าขายหมด)</p>
-          <p className="text-2xl font-bold text-blue-600 mt-1">฿{Math.round(totalRevenue).toLocaleString()}</p>
+        <div className="bg-white rounded-xl border border-gray-200 p-4 min-w-0">
+          <p className="text-xs md:text-sm text-gray-500">มูลค่าขาย (ถ้าขายหมด)</p>
+          <p className="text-lg md:text-2xl font-bold text-blue-600 mt-1 truncate">฿{Math.round(totalRevenue).toLocaleString()}</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <p className="text-sm text-gray-500">กำไรที่คาดหวัง</p>
-          <p className="text-2xl font-bold text-green-600 mt-1">฿{Math.round(totalProfit).toLocaleString()}</p>
+        <div className="bg-white rounded-xl border border-gray-200 p-4 min-w-0">
+          <p className="text-xs md:text-sm text-gray-500">กำไรที่คาดหวัง</p>
+          <p className="text-lg md:text-2xl font-bold text-green-600 mt-1 truncate">฿{Math.round(totalProfit).toLocaleString()}</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <p className="text-sm text-gray-500">Margin เฉลี่ย</p>
-          <p className="text-2xl font-bold text-purple-600 mt-1">{avgMargin.toFixed(1)}%</p>
+        <div className="bg-white rounded-xl border border-gray-200 p-4 min-w-0">
+          <p className="text-xs md:text-sm text-gray-500">Margin เฉลี่ย</p>
+          <p className="text-lg md:text-2xl font-bold text-purple-600 mt-1">{avgMargin.toFixed(1)}%</p>
         </div>
       </div>
 
